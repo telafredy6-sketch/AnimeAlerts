@@ -1,0 +1,918 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AnimeAlert Buea - Notes, synopsis et sorties d'animes</title>
+<meta name="description" content="Cherche un anime pour voir ses notes, son synopsis et où le regarder, puis rejoins nos canaux Telegram pour ne rater aucun épisode.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  color-scheme: light dark;
+  --fond: #F2F4F8;
+  --surface: #FFFFFF;
+  --encre: #14213D;
+  --encre-douce: #55607A;
+  --ligne: #D5DBE8;
+  --action: #2B50FF;
+  --action-texte: #FFFFFF;
+  --bandeau: #1F3FD6;
+  --signal: #FFC83D;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fond: #0D1322;
+    --surface: #161F35;
+    --encre: #EEF1F8;
+    --encre-douce: #A3AEC8;
+    --ligne: #27324D;
+    --action: #7F95FF;
+    --action-texte: #0D1322;
+    --bandeau: #1D2B5E;
+  }
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+
+body {
+  margin: 0;
+  background: var(--fond);
+  color: var(--encre);
+  font-family: "Figtree", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 1rem;
+  line-height: 1.55;
+}
+
+h1, h2, h3 {
+  margin: 0;
+  line-height: 1.1;
+  font-family: "Bricolage Grotesque", "Figtree", system-ui, sans-serif;
+}
+
+a { color: inherit; }
+
+:focus-visible {
+  outline: 3px solid var(--action);
+  outline-offset: 2px;
+}
+
+.conteneur {
+  width: min(1100px, 100% - 2rem);
+  margin-inline: auto;
+}
+
+/* Barre du haut */
+.barre { padding: 1rem 0; }
+
+.barre .conteneur {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.marque {
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+  font-family: "Bricolage Grotesque", "Figtree", system-ui, sans-serif;
+  font-weight: 800;
+  font-size: 1.3rem;
+  text-decoration: none;
+}
+
+.marque i {
+  width: .85rem;
+  height: .85rem;
+  border-radius: 50%;
+  background: var(--signal);
+  box-shadow: 0 0 0 3px var(--action);
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+
+.lien-nav {
+  padding: .55rem .8rem;
+  border-radius: .6rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.lien-nav:hover { background: var(--surface); }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: .7rem 1.1rem;
+  border-radius: .7rem;
+  border: 2px solid var(--action);
+  background: var(--action);
+  color: var(--action-texte);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.btn:hover { filter: brightness(1.08); }
+
+.btn.secondaire {
+  background: transparent;
+  color: var(--encre);
+  border-color: var(--ligne);
+}
+
+.btn.secondaire:hover { border-color: var(--action); filter: none; }
+
+/* Accueil */
+.hero { padding: 2.2rem 0 1.2rem; }
+
+.hero h1 {
+  max-width: 20ch;
+  font-size: clamp(2.1rem, 6.5vw, 3.8rem);
+  font-weight: 800;
+  letter-spacing: -.02em;
+}
+
+.hero p {
+  max-width: 54ch;
+  margin: 1rem 0 1.6rem;
+  color: var(--encre-douce);
+  font-size: 1.1rem;
+}
+
+.recherche {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .6rem;
+}
+
+.recherche input {
+  flex: 1 1 260px;
+  min-width: 0;
+  padding: 1rem 1.1rem;
+  border: 2px solid var(--ligne);
+  border-radius: .8rem;
+  background: var(--surface);
+  color: var(--encre);
+  font: inherit;
+  font-size: 1.1rem;
+}
+
+.recherche input:focus-visible {
+  border-color: var(--action);
+  outline-offset: 0;
+}
+
+.recherche .btn { padding-inline: 1.6rem; }
+
+.exemples {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem;
+  margin-top: .9rem;
+  color: var(--encre-douce);
+}
+
+.exemple {
+  padding: .3rem .8rem;
+  border: 1px solid var(--ligne);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--encre);
+  font: inherit;
+  font-size: .95rem;
+  cursor: pointer;
+}
+
+.exemple:hover { border-color: var(--action); }
+
+/* Sorties des prochaines 24h */
+.sorties { padding: 1.6rem 0 .8rem; }
+
+.sorties h2 { font-size: 1.45rem; }
+
+.sous-titre {
+  margin: .3rem 0 1rem;
+  color: var(--encre-douce);
+}
+
+.rail {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(240px, 1fr);
+  gap: .8rem;
+  padding-bottom: .5rem;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+}
+
+.sortie {
+  display: flex;
+  flex-direction: column;
+  gap: .35rem;
+  padding: 1.1rem 1.2rem;
+  border: 0;
+  border-radius: 1rem;
+  background: var(--bandeau);
+  color: #fff;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  scroll-snap-align: start;
+}
+
+.sortie:hover { filter: brightness(1.12); }
+
+.sortie .compte {
+  color: var(--signal);
+  font-family: "Bricolage Grotesque", "Figtree", system-ui, sans-serif;
+  font-size: 2.1rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.sortie .titre { font-weight: 600; line-height: 1.25; }
+
+.sortie .info { font-size: .92rem; opacity: .85; }
+
+/* Résultats */
+.resultats {
+  display: grid;
+  gap: 1rem;
+  padding: 1.2rem 0 2rem;
+  scroll-margin-top: 1rem;
+}
+
+.resultats:empty { display: none; }
+
+.etat {
+  margin: 0;
+  padding: 1.2rem;
+  border: 1px dashed var(--ligne);
+  border-radius: 1rem;
+  color: var(--encre-douce);
+}
+
+.fiche {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--ligne);
+  border-radius: 1rem;
+  background: var(--surface);
+}
+
+@media (min-width: 700px) {
+  .fiche { grid-template-columns: 170px 1fr; gap: 1.4rem; padding: 1.3rem; }
+}
+
+.affiche {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  border-radius: .6rem;
+  background: var(--ligne);
+}
+
+.fiche h3 { font-size: 1.45rem; }
+
+.meta { margin: .3rem 0 .2rem; color: var(--encre-douce); }
+
+.prochain { margin: 0 0 .8rem; font-weight: 600; }
+
+.notes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .6rem;
+  margin: .8rem 0;
+}
+
+.note {
+  display: flex;
+  flex-direction: column;
+  min-width: 96px;
+  padding: .5rem .8rem;
+  border: 1px solid var(--ligne);
+  border-radius: .7rem;
+  text-decoration: none;
+}
+
+a.note:hover { border-color: var(--action); }
+
+.note .valeur {
+  font-family: "Bricolage Grotesque", "Figtree", system-ui, sans-serif;
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+.note .nom { color: var(--encre-douce); font-size: .85rem; }
+
+.synopsis {
+  display: -webkit-box;
+  max-width: 68ch;
+  margin: .2rem 0 .3rem;
+  overflow: hidden;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+}
+
+.synopsis.ouvert { display: block; }
+
+.lire-plus {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--action);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.groupe {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .4rem;
+  margin: .7rem 0 0;
+}
+
+.groupe .libelle { margin-right: .3rem; color: var(--encre-douce); }
+
+.chip {
+  padding: .2rem .65rem;
+  border: 1px solid var(--ligne);
+  border-radius: 999px;
+  font-size: .9rem;
+  text-decoration: none;
+}
+
+a.chip:hover { border-color: var(--action); }
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .6rem;
+  margin-top: 1rem;
+}
+
+/* Canaux Telegram */
+.canaux { padding: 2rem 0 3rem; scroll-margin-top: 1rem; }
+
+.canaux h2 { font-size: 1.6rem; }
+
+.grille-canaux {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.canal {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: .7rem;
+  padding: 1.2rem;
+  border: 1px solid var(--ligne);
+  border-radius: 1rem;
+  background: var(--surface);
+}
+
+.canal h3 { font-size: 1.2rem; }
+
+.canal p { flex: 1; margin: 0; color: var(--encre-douce); }
+
+.pied {
+  padding: 1.5rem 0 2.5rem;
+  border-top: 1px solid var(--ligne);
+  color: var(--encre-douce);
+  font-size: .92rem;
+}
+
+.pied p { max-width: 70ch; margin: 0; }
+</style>
+</head>
+<body>
+
+<header class="barre">
+  <div class="conteneur">
+    <a class="marque" href="#"><i aria-hidden="true"></i>AnimeAlert Buea</a>
+    <nav class="nav" aria-label="Navigation principale">
+      <a class="lien-nav" href="#canaux">Nos canaux</a>
+      <a class="btn" id="btn-nav" href="#canaux">Rejoindre sur Telegram</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="conteneur">
+      <h1>Cherche un anime, vois ses notes, sois prévenu de ses sorties.</h1>
+      <p>Tape un titre pour voir son synopsis, ses notes et où le regarder. Les sorties du jour et les rappels arrivent sur Telegram.</p>
+
+      <form class="recherche" id="formulaire" role="search">
+        <label for="champ" class="sr" hidden>Titre de l'anime</label>
+        <input id="champ" type="search" name="q" placeholder="Ex. One Piece, Frieren, Jujutsu Kaisen" autocomplete="off" enterkeyhint="search">
+        <button class="btn" type="submit">Chercher</button>
+      </form>
+
+      <div class="exemples" id="exemples">
+        <span>Essaie :</span>
+        <button class="exemple" type="button">One Piece</button>
+        <button class="exemple" type="button">Frieren</button>
+        <button class="exemple" type="button">Demon Slayer</button>
+        <button class="exemple" type="button">Solo Leveling</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="conteneur">
+    <div class="resultats" id="resultats" aria-live="polite"></div>
+  </div>
+
+  <section class="sorties" id="sorties">
+    <div class="conteneur">
+      <h2>Ça sort dans les prochaines 24h</h2>
+      <p class="sous-titre">Les épisodes les plus attendus, avec le compte à rebours. Touche une carte pour voir la fiche.</p>
+      <div class="rail" id="rail"></div>
+    </div>
+  </section>
+
+  <section class="canaux" id="canaux">
+    <div class="conteneur">
+      <h2>Rejoins-nous sur Telegram</h2>
+      <p class="sous-titre">Choisis le canal qui t'intéresse. Tu peux en rejoindre plusieurs.</p>
+      <div class="grille-canaux" id="liste-canaux"></div>
+    </div>
+  </section>
+</main>
+
+<footer class="pied">
+  <div class="conteneur">
+    <p>Données fournies par AniList, Jikan (MyAnimeList) et OMDb pour IMDb. La note IMDb peut ne pas correspondre pour certains titres. AnimeAlert Buea ne diffuse aucune vidéo.</p>
+  </div>
+</footer>
+
+<noscript>
+  <div class="conteneur"><p class="etat">Active JavaScript pour utiliser la recherche.</p></div>
+</noscript>
+
+<script>
+/* ============ A MODIFIER ============ */
+const CONFIG = {
+  // Nom du bot Telegram, sans le @ (exemple : "AnimeAlertBuea_bot"). Laisse vide si tu n'en as pas.
+  botUsername: "AnimeAlert",
+
+  // Clé gratuite OMDb pour afficher la note IMDb (https://www.omdbapi.com/apikey.aspx). Laisse vide sinon.
+  omdbKey: "",
+
+  // Tes canaux Telegram. Pour en ajouter un, copie une ligne { ... } et change les valeurs.
+  canaux: [
+    {
+      nom: "AnimeAlert Buea",
+      description: "Les sorties du jour, des résumés d'animes et des sondages.",
+      lien: "https://t.me/AnimeAlertBuea"
+    },
+    {
+      nom: "My Anime",
+      description: "Animes sur Telegram.",
+      lien: "https://t.me/myanime67"
+    },
+    {
+      nom: "Anime Galaxy",
+      description: "Animes sur Telegram.",
+      lien: "https://t.me/Anime_GalaxyOfficial"
+    },
+    {
+      nom: "Mangas Japanimation",
+      description: "Mangas et animes japonais sur Telegram.",
+      lien: "https://t.me/Mangas_Japanimations"
+    },
+    {
+      nom: "Anime Home Japan",
+      description: "Animes sur Telegram.",
+      lien: "https://t.me/OTAKU_HOME17"
+    },
+    {
+      nom: "Hebdo Zone",
+      description: "Canal Telegram à suivre chaque semaine.",
+      lien: "https://t.me/HebdoZone5"
+    }
+    // Pour en ajouter un autre, copie un bloc ci-dessus et change les valeurs :
+    // {
+    //   nom: "Nom du canal",
+    //   description: "Ce que les gens y trouvent.",
+    //   lien: "https://t.me/nom_du_canal"
+    // },
+  ]
+};
+/* ===================================== */
+
+const ANILIST = "https://graphql.anilist.co";
+
+const QUERY_RECHERCHE = `
+query ($search: String) {
+  Page(page: 1, perPage: 6) {
+    media(search: $search, type: ANIME, isAdult: false, sort: SEARCH_MATCH) {
+      id
+      idMal
+      title { romaji english }
+      coverImage { large }
+      description(asHtml: false)
+      genres
+      averageScore
+      episodes
+      status
+      format
+      seasonYear
+      siteUrl
+      nextAiringEpisode { episode airingAt }
+      externalLinks { site type url }
+    }
+  }
+}`;
+
+const QUERY_SORTIES = `
+query ($debut: Int, $fin: Int) {
+  Page(page: 1, perPage: 50) {
+    airingSchedules(airingAt_greater: $debut, airingAt_lesser: $fin, sort: TIME) {
+      episode
+      airingAt
+      media {
+        title { romaji english }
+        popularity
+        isAdult
+      }
+    }
+  }
+}`;
+
+const FORMATS = { TV: "série", TV_SHORT: "série courte", MOVIE: "film", OVA: "OVA", ONA: "ONA", SPECIAL: "spécial", MUSIC: "clip" };
+const STATUTS = { FINISHED: "terminé", RELEASING: "en cours", NOT_YET_RELEASED: "pas encore sorti", CANCELLED: "annulé", HIATUS: "en pause" };
+
+const $ = (s, r = document) => r.querySelector(s);
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+function esc(texte) {
+  const table = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
+  return String(texte ?? "").replace(/[&<>"']/g, c => table[c]);
+}
+
+function urlSure(u) {
+  try {
+    const x = new URL(u);
+    return x.protocol === "https:" || x.protocol === "http:" ? x.href : "";
+  } catch {
+    return "";
+  }
+}
+
+function titreDe(m) { return m.title.english || m.title.romaji; }
+
+function nettoyer(desc) {
+  return (desc || "")
+    .replace(/<br\s*\/?>/gi, " ")
+    .replace(/<[^>]+>/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function lienBot() {
+  const nom = (CONFIG.botUsername || "").replace("@", "").trim();
+  return nom ? "https://t.me/" + nom : "";
+}
+
+function lienTelegram() {
+  const premier = CONFIG.canaux[0];
+  return lienBot() || (premier ? urlSure(premier.lien) : "");
+}
+
+async function anilist(query, variables) {
+  const reponse = await fetch(ANILIST, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "Accept": "application/json" },
+    body: JSON.stringify({ query, variables })
+  });
+  if (!reponse.ok) throw new Error("AniList " + reponse.status);
+  const json = await reponse.json();
+  if (json.errors) throw new Error("AniList erreur");
+  return json.data;
+}
+
+/* ---------- Compte à rebours ---------- */
+
+function formatCompte(s) {
+  const p = n => String(n).padStart(2, "0");
+  return `${p(Math.floor(s / 3600))}:${p(Math.floor((s % 3600) / 60))}:${p(s % 60)}`;
+}
+
+function heureCameroun(ts) {
+  return new Date(ts * 1000).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit", timeZone: "Africa/Douala" });
+}
+
+function tick() {
+  const maintenant = Math.floor(Date.now() / 1000);
+  document.querySelectorAll("[data-airing]").forEach(el => {
+    const reste = Number(el.dataset.airing) - maintenant;
+    el.textContent = reste <= 0 ? "En ligne" : formatCompte(reste);
+  });
+}
+
+setInterval(tick, 1000);
+
+async function chargerSorties() {
+  const section = $("#sorties");
+  const debut = Math.floor(Date.now() / 1000);
+
+  try {
+    const data = await anilist(QUERY_SORTIES, { debut, fin: debut + 86400 });
+
+    const items = data.Page.airingSchedules
+      .filter(i => !i.media.isAdult)
+      .sort((a, b) => (b.media.popularity || 0) - (a.media.popularity || 0))
+      .slice(0, 5)
+      .sort((a, b) => a.airingAt - b.airingAt);
+
+    if (!items.length) {
+      section.hidden = true;
+      return;
+    }
+
+    $("#rail").innerHTML = items.map(i => `
+      <button class="sortie" type="button" data-titre="${esc(i.media.title.romaji)}">
+        <span class="compte" data-airing="${i.airingAt}">--:--:--</span>
+        <span class="titre">${esc(titreDe(i.media))}</span>
+        <span class="info">Épisode ${i.episode} à ${heureCameroun(i.airingAt)} (heure du Cameroun)</span>
+      </button>`).join("");
+
+    tick();
+  } catch {
+    section.hidden = true;
+  }
+}
+
+/* ---------- Notes ---------- */
+
+async function jikanScore(idMal) {
+  for (let essai = 0; essai < 2; essai++) {
+    const r = await fetch(`https://api.jikan.moe/v4/anime/${idMal}`);
+    if (r.status === 429) { await sleep(1200); continue; }
+    if (!r.ok) return null;
+    const j = await r.json();
+    return j.data && j.data.score ? Number(j.data.score).toFixed(2) : null;
+  }
+  return null;
+}
+
+async function omdbNote(m) {
+  const titres = [...new Set([m.title.english, m.title.romaji].filter(Boolean))];
+  for (const t of titres) {
+    const url = `https://www.omdbapi.com/?apikey=${encodeURIComponent(CONFIG.omdbKey)}&t=${encodeURIComponent(t)}`;
+    const r = await fetch(url);
+    if (!r.ok) continue;
+    const j = await r.json();
+    if (j.Response === "True" && j.imdbRating && j.imdbRating !== "N/A") {
+      return { note: j.imdbRating, id: j.imdbID };
+    }
+  }
+  return null;
+}
+
+function setNote(id, cle, valeur, href) {
+  const el = document.querySelector(`[data-note="${id}-${cle}"]`);
+  if (!el) return;
+  el.querySelector(".valeur").textContent = valeur || "—";
+  if (href && el.tagName === "A") el.href = href;
+}
+
+async function chargerNotes(medias, numeroRecherche) {
+  for (const m of medias) {
+    if (numeroRecherche !== numero) return;
+
+    if (m.idMal) {
+      try { setNote(m.id, "mal", await jikanScore(m.idMal)); }
+      catch { setNote(m.id, "mal", null); }
+    }
+
+    if (CONFIG.omdbKey) {
+      try {
+        const r = await omdbNote(m);
+        if (r) setNote(m.id, "imdb", r.note, `https://www.imdb.com/title/${r.id}/`);
+        else setNote(m.id, "imdb", null);
+      } catch { setNote(m.id, "imdb", null); }
+    }
+
+    await sleep(450);
+  }
+}
+
+/* ---------- Fiches ---------- */
+
+function htmlFiche(m) {
+  const titre = titreDe(m);
+  const infos = [
+    m.seasonYear,
+    FORMATS[m.format],
+    m.episodes ? `${m.episodes} épisodes` : null,
+    STATUTS[m.status]
+  ].filter(Boolean).join(", ");
+
+  const noteAni = m.averageScore ? (m.averageScore / 10).toFixed(1) : "—";
+  const imdbCherche = `https://www.imdb.com/find/?q=${encodeURIComponent(titre)}&s=tt`;
+
+  const malNote = m.idMal
+    ? `<a class="note" data-note="${m.id}-mal" href="https://myanimelist.net/anime/${m.idMal}" target="_blank" rel="noopener noreferrer"><span class="valeur">…</span><span class="nom">MyAnimeList</span></a>`
+    : `<div class="note" data-note="${m.id}-mal"><span class="valeur">—</span><span class="nom">MyAnimeList</span></div>`;
+
+  const imdbNote = CONFIG.omdbKey
+    ? `<a class="note" data-note="${m.id}-imdb" href="${esc(imdbCherche)}" target="_blank" rel="noopener noreferrer"><span class="valeur">…</span><span class="nom">IMDb</span></a>`
+    : `<a class="note" data-note="${m.id}-imdb" href="${esc(imdbCherche)}" target="_blank" rel="noopener noreferrer"><span class="valeur">Voir</span><span class="nom">IMDb</span></a>`;
+
+  let prochain = "";
+  if (m.nextAiringEpisode) {
+    const quand = new Date(m.nextAiringEpisode.airingAt * 1000).toLocaleString("fr-FR", {
+      weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit", timeZone: "Africa/Douala"
+    });
+    prochain = `<p class="prochain">Prochain épisode : le ${esc(m.nextAiringEpisode.episode)} sort le ${esc(quand)} (heure du Cameroun).</p>`;
+  }
+
+  const synopsis = nettoyer(m.description);
+  const synopsisHtml = synopsis
+    ? `<p class="synopsis">${esc(synopsis)}</p>${synopsis.length > 240 ? '<button class="lire-plus" type="button">Lire la suite</button>' : ""}`
+    : `<p class="synopsis">Pas de synopsis disponible.</p>`;
+
+  const genres = (m.genres || []).slice(0, 5).map(g => `<span class="chip">${esc(g)}</span>`).join("");
+
+  const vus = new Set();
+  const plateformes = (m.externalLinks || [])
+    .filter(l => l.type === "STREAMING" && urlSure(l.url) && !vus.has(l.site) && vus.add(l.site))
+    .slice(0, 6)
+    .map(l => `<a class="chip" href="${esc(urlSure(l.url))}" target="_blank" rel="noopener noreferrer">${esc(l.site)}</a>`)
+    .join("");
+
+  const tg = lienTelegram();
+
+  return `
+  <article class="fiche">
+    <img class="affiche" src="${esc(urlSure(m.coverImage && m.coverImage.large))}" alt="Affiche de ${esc(titre)}" loading="lazy">
+    <div>
+      <h3>${esc(titre)}</h3>
+      <p class="meta">${esc(infos)}</p>
+      ${prochain}
+      <div class="notes">
+        <div class="note" data-note="${m.id}-ani"><span class="valeur">${noteAni}</span><span class="nom">AniList</span></div>
+        ${malNote}
+        ${imdbNote}
+      </div>
+      ${synopsisHtml}
+      ${genres ? `<div class="groupe">${genres}</div>` : ""}
+      ${plateformes ? `<div class="groupe"><span class="libelle">Où regarder :</span>${plateformes}</div>` : ""}
+      <div class="actions">
+        ${tg ? `<a class="btn" href="${esc(tg)}" target="_blank" rel="noopener noreferrer">Suivre sur Telegram</a>` : ""}
+        <a class="btn secondaire" href="${esc(urlSure(m.siteUrl))}" target="_blank" rel="noopener noreferrer">Voir sur AniList</a>
+      </div>
+    </div>
+  </article>`;
+}
+
+/* ---------- Recherche ---------- */
+
+let numero = 0;
+
+async function rechercher(q, defiler) {
+  q = q.trim();
+  const zone = $("#resultats");
+
+  if (q.length < 2) {
+    numero++;
+    zone.innerHTML = "";
+    return;
+  }
+
+  const mon = ++numero;
+  zone.innerHTML = `<p class="etat">Recherche de « ${esc(q)} »...</p>`;
+
+  if (defiler) zone.scrollIntoView({ behavior: "smooth", block: "start" });
+
+  try { history.replaceState(null, "", "?q=" + encodeURIComponent(q)); } catch { /* ignoré */ }
+
+  try {
+    const data = await anilist(QUERY_RECHERCHE, { search: q });
+    if (mon !== numero) return;
+
+    const medias = data.Page.media;
+
+    if (!medias.length) {
+      zone.innerHTML = `<p class="etat">Aucun anime trouvé pour « ${esc(q)} ». Vérifie l'orthographe ou essaie le titre japonais.</p>`;
+      return;
+    }
+
+    zone.innerHTML = medias.map(htmlFiche).join("");
+    chargerNotes(medias, mon);
+  } catch {
+    if (mon !== numero) return;
+    zone.innerHTML = `<p class="etat">Impossible de joindre AniList. Vérifie ta connexion puis relance la recherche.</p>`;
+  }
+}
+
+/* ---------- Canaux ---------- */
+
+function afficherCanaux() {
+  const bot = lienBot();
+
+  let html = CONFIG.canaux.map(c => `
+    <article class="canal">
+      <h3>${esc(c.nom)}</h3>
+      <p>${esc(c.description)}</p>
+      <a class="btn" href="${esc(urlSure(c.lien))}" target="_blank" rel="noopener noreferrer">Rejoindre le canal</a>
+    </article>`).join("");
+
+  if (bot) {
+    html = `
+    <article class="canal">
+      <h3>Le bot AnimeAlert</h3>
+      <p>Ajoute tes animes en favoris et reçois un rappel avant chaque épisode.</p>
+      <a class="btn" href="${esc(bot)}" target="_blank" rel="noopener noreferrer">Ouvrir le bot</a>
+    </article>` + html;
+
+    const bouton = $("#btn-nav");
+    bouton.textContent = "Ouvrir le bot";
+    bouton.href = bot;
+    bouton.target = "_blank";
+    bouton.rel = "noopener noreferrer";
+  }
+
+  $("#liste-canaux").innerHTML = html;
+}
+
+/* ---------- Démarrage ---------- */
+
+const champ = $("#champ");
+let minuterie;
+
+$("#formulaire").addEventListener("submit", e => {
+  e.preventDefault();
+  clearTimeout(minuterie);
+  rechercher(champ.value, true);
+});
+
+champ.addEventListener("input", () => {
+  clearTimeout(minuterie);
+  minuterie = setTimeout(() => {
+    if (champ.value.trim().length >= 3) rechercher(champ.value, false);
+  }, 600);
+});
+
+$("#exemples").addEventListener("click", e => {
+  const bouton = e.target.closest(".exemple");
+  if (!bouton) return;
+  champ.value = bouton.textContent;
+  rechercher(champ.value, true);
+});
+
+$("#rail").addEventListener("click", e => {
+  const carte = e.target.closest(".sortie");
+  if (!carte) return;
+  champ.value = carte.dataset.titre;
+  rechercher(champ.value, true);
+});
+
+$("#resultats").addEventListener("click", e => {
+  const bouton = e.target.closest(".lire-plus");
+  if (!bouton) return;
+  const texte = bouton.previousElementSibling;
+  const ouvert = texte.classList.toggle("ouvert");
+  bouton.textContent = ouvert ? "Réduire" : "Lire la suite";
+});
+
+afficherCanaux();
+chargerSorties();
+
+const demande = new URLSearchParams(location.search).get("q");
+if (demande) {
+  champ.value = demande;
+  rechercher(demande, false);
+}
+</script>
+</body>
+</html>

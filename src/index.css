@@ -1,0 +1,95 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-display: "Bricolage Grotesque", "Figtree", system-ui, sans-serif;
+  --font-sans: "Figtree", system-ui, -apple-system, Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+  
+  --color-fond-clair: #F2F4F8;
+  --color-fond-sombre: #0D1322;
+  --color-surface-clair: #FFFFFF;
+  --color-surface-sombre: #161F35;
+  --color-encre-clair: #14213D;
+  --color-encre-sombre: #EEF1F8;
+  --color-encre-douce-clair: #55607A;
+  --color-encre-douce-sombre: #A3AEC8;
+  --color-ligne-clair: #D5DBE8;
+  --color-ligne-sombre: #27324D;
+  --color-action-clair: #2B50FF;
+  --color-action-sombre: #7F95FF;
+  --color-bandeau-clair: #1F3FD6;
+  --color-bandeau-sombre: #1D2B5E;
+  --color-signal: #FFC83D;
+}
+
+:root {
+  --fond: #F2F4F8;
+  --surface: #FFFFFF;
+  --encre: #14213D;
+  --encre-douce: #55607A;
+  --ligne: #D5DBE8;
+  --action: #2B50FF;
+  --action-texte: #FFFFFF;
+  --bandeau: #1F3FD6;
+  --signal: #FFC83D;
+}
+
+.dark {
+  --fond: #0D1322;
+  --surface: #161F35;
+  --encre: #EEF1F8;
+  --encre-douce: #A3AEC8;
+  --ligne: #27324D;
+  --action: #7F95FF;
+  --action-texte: #0D1322;
+  --bandeau: #1D2B5E;
+  --signal: #FFC83D;
+}
+
+html {
+  scroll-behavior: smooth;
+  font-family: var(--font-sans);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #334155;
+}
+
+/* Line clamp helpers */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.line-clamp-4 {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}

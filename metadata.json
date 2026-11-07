@@ -1,0 +1,6 @@
+{
+  "name": "AnimeAlert Buea",
+  "description": "Portail multipages d'animes à Buea : notes croisées AniList/MAL/IMDb, calendrier des sorties au Cameroun, gestion de favoris et canaux Telegram.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
