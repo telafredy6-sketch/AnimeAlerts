@@ -1,0 +1,6 @@
+python-telegram-bot[job-queue]>=21.0
+requests
+python-dotenv
+rapidfuzz
+ijson
+aiohttp
