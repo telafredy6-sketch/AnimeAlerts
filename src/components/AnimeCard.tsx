@@ -1,3 +1,4 @@
+import { tr } from '../lib/i18n';
 import React, { useState, useEffect } from 'react';
 import { Star, Heart, Calendar, PlayCircle } from 'lucide-react';
 import { AnimeMedia } from '../lib/types';
@@ -61,7 +62,7 @@ export const AnimeCard: React.FC<AnimeCardProps> = ({ anime, onNavigate, layout 
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-xs text-slate-400">
-              Affiche
+              {tr("Affiche", "Poster")}
             </div>
           )}
         </div>
@@ -100,7 +101,7 @@ export const AnimeCard: React.FC<AnimeCardProps> = ({ anime, onNavigate, layout 
 
           <div className="flex items-center justify-between pt-2 border-t border-[#D5DBE8]/60 dark:border-[#27324D]/60 mt-2">
             <span className="text-[11px] text-[#55607A] dark:text-[#A3AEC8]">
-              {anime.episodes ? `${anime.episodes} épisodes` : 'Épisodes en cours'}
+              {anime.episodes ? `${anime.episodes} ${tr('épisodes', 'episodes')}` : tr('Épisodes en cours', 'Ongoing episodes')}
             </span>
             <button
               onClick={handleToggleFav}
@@ -109,7 +110,7 @@ export const AnimeCard: React.FC<AnimeCardProps> = ({ anime, onNavigate, layout 
                   ? 'bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-900 text-rose-600'
                   : 'border-transparent text-[#55607A] hover:text-rose-600'
               }`}
-              title={isFav ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+              title={isFav ? tr('Retirer des favoris', 'Remove from favorites') : tr('Ajouter aux favoris', 'Add to favorites')}
             >
               <Heart className={`w-4 h-4 ${isFav ? 'fill-rose-600' : ''}`} />
             </button>
@@ -155,8 +156,8 @@ export const AnimeCard: React.FC<AnimeCardProps> = ({ anime, onNavigate, layout 
               ? 'bg-rose-500 text-white shadow-md'
               : 'bg-black/40 text-white/90 hover:bg-black/60 hover:text-white'
           }`}
-          title={isFav ? 'Retirer des favoris' : 'Ajouter aux favoris'}
-          aria-label="Favori"
+          title={isFav ? tr('Retirer des favoris', 'Remove from favorites') : tr('Ajouter aux favoris', 'Add to favorites')}
+          aria-label={tr("Favori", "Favorite")}
         >
           <Heart className={`w-4 h-4 ${isFav ? 'fill-white' : ''}`} />
         </button>
@@ -172,8 +173,8 @@ export const AnimeCard: React.FC<AnimeCardProps> = ({ anime, onNavigate, layout 
         {/* Airing Tag if upcoming episode */}
         {anime.nextAiringEpisode && (
           <div className="absolute bottom-2 left-2 right-2 px-2 py-1 rounded-lg bg-[#1F3FD6]/90 backdrop-blur-sm text-white text-[11px] font-semibold flex items-center justify-between">
-            <span>Ép. {anime.nextAiringEpisode.episode}</span>
-            <span className="text-[#FFC83D]">À venir</span>
+            <span>{tr('Ép.', 'Ep.')} {anime.nextAiringEpisode.episode}</span>
+            <span className="text-[#FFC83D]">{tr("À venir", "Upcoming")}</span>
           </div>
         )}
       </div>
@@ -193,7 +194,7 @@ export const AnimeCard: React.FC<AnimeCardProps> = ({ anime, onNavigate, layout 
             {anime.episodes && (
               <>
                 <span aria-hidden="true">·</span>
-                <span>{anime.episodes} ép.</span>
+                <span>{anime.episodes} {tr('ép.', 'ep.')}</span>
               </>
             )}
           </div>
@@ -213,3 +214,4 @@ export const AnimeCard: React.FC<AnimeCardProps> = ({ anime, onNavigate, layout 
     </article>
   );
 };
+      
