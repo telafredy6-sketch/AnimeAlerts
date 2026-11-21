@@ -394,7 +394,7 @@ export const AnimeDetailPage: React.FC<AnimeDetailPageProps> = ({ id, onNavigate
             {/* Bouton d'alerte Bot Telegram */}
             <div className="pt-1 flex flex-wrap items-center gap-3">
               <a
-                href={`https://t.me/AnimeAlert?start=anime_${anime.id}`}
+                href={`https://t.me/animealert_buea_bot?start=anime_${anime.id}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#2B50FF] hover:bg-blue-600 active:scale-95 text-white text-xs font-semibold shadow-md shadow-[#2B50FF]/25 transition-all"
