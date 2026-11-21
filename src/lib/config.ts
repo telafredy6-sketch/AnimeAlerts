@@ -2,17 +2,17 @@ import { CanalTelegram } from './types';
 
 export const CONFIG = {
   // Nom du bot Telegram (AnimeAlert)
-  botUsername: "AnimeAlert",
-  botUrl: "https://t.me/AnimeAlert",
+  botUsername: "animealert_buea_bot",
+  botUrl: "https://t.me/animealert_buea_bot",
 
   // Clé API OMDb pour notes IMDb si renseignée
   omdbKey: "",
 
   canaux: [
     {
-      nom: "Bot AnimeAlert (@AnimeAlert)",
+      nom: "Bot AnimeAlert (@animealert_buea_bot)",
       description: "Le bot Telegram officiel : reçois des rappels personnalisés 15 min avant chaque épisode et recherche tes animes directement.",
-      lien: "https://t.me/AnimeAlert",
+      lien: "https://t.me/animealert_buea_bot",
       categorie: "officiel",
       badge: "Bot Officiel 🤖",
       membres: "Actif 24/7"
@@ -147,4 +147,5 @@ export function getSaisonCourante(): { id: string; label: string; slug: string; 
   else saison = SAISONS[0];
 
   return { ...saison, annee };
-}
+      }
+      
