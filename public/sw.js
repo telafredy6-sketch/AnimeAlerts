@@ -1,4 +1,5 @@
-const CACHE_NAME = 'animealert-v2';
+const CACHE_NAME = 'animealert-v3';
+const IMAGE_CACHE_NAME = 'animealert-images-v1';
 const NOTIF_STATE_CACHE = 'animealert-notif-state';
 const NOTIF_STATE_KEY = '/__animealert_notif_state__';
 
@@ -27,7 +28,13 @@ self.addEventListener('activate', (event) => {
     caches.keys().then((keys) => {
       return Promise.all(
         keys
-          .filter((key) => key !== CACHE_NAME && key !== 'animealert-api-cache' && key !== NOTIF_STATE_CACHE)
+          .filter(
+            (key) =>
+              key !== CACHE_NAME &&
+              key !== IMAGE_CACHE_NAME &&
+              key !== 'animealert-api-cache' &&
+              key !== NOTIF_STATE_CACHE
+          )
           .map((key) => caches.delete(key))
       );
     })
@@ -43,18 +50,44 @@ self.addEventListener('fetch', (event) => {
   // Ignore internal virtual cache key
   if (url.pathname === NOTIF_STATE_KEY) return;
 
-  // External APIs (AniList, Jikan, OMDb): Network First with cache fallback
-  if (url.origin.includes('anilist.co') || url.origin.includes('jikan.moe') || url.origin.includes('omdbapi.com')) {
+  // External JSON APIs (GraphQL AniList, Jikan, OMDb): Network First with cache fallback
+  if (
+    url.hostname === 'graphql.anilist.co' ||
+    url.hostname.includes('jikan.moe') ||
+    url.hostname.includes('omdbapi.com')
+  ) {
     event.respondWith(
       fetch(event.request)
         .then((response) => {
           if (response.ok) {
             const clone = response.clone();
-            caches.open('animealert-api-cache').then((cache) => cache.put(event.request, clone));
+            event.waitUntil(caches.open('animealert-api-cache').then((cache) => cache.put(event.request, clone)));
           }
           return response;
         })
         .catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
+  // Anime CDN images (s4.anilist.co, img.anili.st): Fast Cache First
+  if (
+    event.request.destination === 'image' &&
+    (url.hostname.includes('anilist.co') || url.hostname.includes('anili.st') || url.hostname.includes('myanimelist.net'))
+  ) {
+    event.respondWith(
+      caches.open(IMAGE_CACHE_NAME).then((cache) =>
+        cache.match(event.request).then((cached) => {
+          if (cached) return cached;
+          return fetch(event.request).then((networkResponse) => {
+            if (networkResponse && (networkResponse.ok || networkResponse.type === 'opaque')) {
+              const clone = networkResponse.clone();
+              event.waitUntil(cache.put(event.request, clone));
+            }
+            return networkResponse;
+          });
+        })
+      )
     );
     return;
   }

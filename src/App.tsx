@@ -1,9 +1,10 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from './hooks/useRouter';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 import { MobileNav } from './components/MobileNav';
 import { OfflineIndicator } from './components/OfflineIndicator';
+import { langue, Langue } from './lib/i18n';
 import {
   checkUpcomingCameroonEpisodes,
   syncStateToServiceWorker
@@ -23,8 +24,9 @@ import { NotFoundPage } from './pages/NotFoundPage';
 
 export default function App() {
   const { pathname, searchParams, route, navigate } = useRouter();
+  const [, setActiveLang] = useState<Langue>(() => langue);
 
-  // Sync Service Worker notification state & schedule Cameroon airing checks
+  // Sync Service Worker notification state, language & schedule Cameroon airing checks
   useEffect(() => {
     void syncStateToServiceWorker();
     void checkUpcomingCameroonEpisodes();
@@ -37,6 +39,13 @@ export default function App() {
       void syncStateToServiceWorker();
     };
     window.addEventListener('favoris:change', handleFavSync);
+
+    const handleLangChange = (e: Event) => {
+      const custom = e as CustomEvent<Langue>;
+      setActiveLang(custom.detail || langue);
+      void syncStateToServiceWorker();
+    };
+    window.addEventListener('animealert:lang-change', handleLangChange);
 
     const handleSwMessage = (event: MessageEvent) => {
       if (event.data?.type === 'NAVIGATE_FROM_NOTIFICATION' && typeof event.data.url === 'string') {
@@ -51,6 +60,7 @@ export default function App() {
     return () => {
       clearInterval(interval);
       window.removeEventListener('favoris:change', handleFavSync);
+      window.removeEventListener('animealert:lang-change', handleLangChange);
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.removeEventListener('message', handleSwMessage);
       }

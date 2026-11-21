@@ -241,8 +241,8 @@ export const AnimeDetailPage: React.FC<AnimeDetailPageProps> = ({ id, onNavigate
     imdbRating
   );
 
-  const coverUrl = anime.coverImage?.extraLarge || anime.coverImage?.large;
-  const bannerUrl = anime.bannerImage || coverUrl;
+  const coverUrl = anime.coverImage?.large || anime.coverImage?.extraLarge;
+  const bannerUrl = coverUrl || anime.bannerImage;
 
   return (
     <div className="space-y-8 pb-12">
@@ -293,6 +293,8 @@ export const AnimeDetailPage: React.FC<AnimeDetailPageProps> = ({ id, onNavigate
               <img
                 src={coverUrl}
                 alt={titre}
+                decoding="async"
+                fetchPriority="high"
                 referrerPolicy="no-referrer"
                 className="w-full h-full object-cover"
               />

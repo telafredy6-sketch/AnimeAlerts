@@ -9,7 +9,7 @@ function detecter(): Langue {
   return nav.toLowerCase().startsWith("fr") ? "fr" : "en";
 }
 
-export const langue: Langue = detecter();
+export let langue: Langue = detecter();
 
 if (typeof document !== "undefined") {
   document.documentElement.lang = langue;
@@ -21,12 +21,19 @@ export function tr(fr: string, en: string): string {
 }
 
 /** Locale pour les dates et les nombres */
-export const LOCALE = langue === "en" ? "en-GB" : "fr-FR";
+export let LOCALE = langue === "en" ? "en-GB" : "fr-FR";
 
-/** Change la langue puis recharge la page */
+/** Change la langue instantanément sans recharger la page (évite les 404 SPA sur Vercel) */
 export function changerLangue(l: Langue): void {
+  langue = l;
+  LOCALE = l === "en" ? "en-GB" : "fr-FR";
   try {
     localStorage.setItem("langue", l);
   } catch {}
-  window.location.reload();
+  if (typeof document !== "undefined") {
+    document.documentElement.lang = l;
+  }
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent("animealert:lang-change", { detail: l }));
+  }
 }

@@ -14,7 +14,6 @@ interface AnimeCardProps {
 
 export const AnimeCard: React.FC<AnimeCardProps> = ({ anime, onNavigate, layout = 'grid' }) => {
   const [isFav, setIsFav] = useState(() => estFavori(anime.id));
-  const [imgLoaded, setImgLoaded] = useState(false);
 
   useEffect(() => {
     const handleFavChange = () => {
@@ -57,6 +56,7 @@ export const AnimeCard: React.FC<AnimeCardProps> = ({ anime, onNavigate, layout 
               src={coverUrl}
               alt={title}
               loading="lazy"
+              decoding="async"
               referrerPolicy="no-referrer"
               className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
             />
@@ -132,11 +132,9 @@ export const AnimeCard: React.FC<AnimeCardProps> = ({ anime, onNavigate, layout 
             src={coverUrl}
             alt={title}
             loading="lazy"
+            decoding="async"
             referrerPolicy="no-referrer"
-            onLoad={() => setImgLoaded(true)}
-            className={`w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 ${
-              imgLoaded ? 'opacity-100' : 'opacity-0'
-            }`}
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center p-4 bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-800 dark:to-slate-900 text-center">
