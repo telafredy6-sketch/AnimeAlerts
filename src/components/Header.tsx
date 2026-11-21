@@ -1,3 +1,4 @@
+import { tr, langue, changerLangue } from '../lib/i18n';
 import React, { useState, useEffect } from 'react';
 import { Heart, Sun, Moon, Monitor, Send, Sparkles, Bot } from 'lucide-react';
 import { lireFavoris } from '../lib/favoris';
@@ -59,15 +60,15 @@ export const Header: React.FC<HeaderProps> = ({ currentPath, onNavigate }) => {
   const botUrl = lienBot() || "https://t.me/animealert_buea_bot";
 
   const navLinks = [
-    { label: 'Accueil', path: '/' },
-    { label: 'Recherche', path: '/recherche' },
-    { label: 'Calendrier', path: '/calendrier' },
+    { label: tr('Accueil', 'Home'), path: '/' },
+    { label: tr('Recherche', 'Search'), path: '/recherche' },
+    { label: tr('Calendrier', 'Calendar'), path: '/calendrier' },
     {
-      label: 'Favoris',
+      label: tr('Favoris', 'Favorites'),
       path: '/favoris',
       badge: favCount > 0 ? favCount : null
     },
-    { label: 'Canaux', path: '/canaux' }
+    { label: tr('Canaux', 'Channels'), path: '/canaux' }
   ];
 
   return (
@@ -123,18 +124,28 @@ export const Header: React.FC<HeaderProps> = ({ currentPath, onNavigate }) => {
             onClick={handleSurprise}
             disabled={surpriseLoading}
             className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold rounded-lg border border-[#D5DBE8] dark:border-[#27324D] text-[#14213D] dark:text-[#EEF1F8] hover:border-[#2B50FF] transition-colors whitespace-nowrap shrink-0"
-            title="Ouvrir un anime populaire au hasard"
+            title={tr("Ouvrir un anime populaire au hasard", "Open a random popular anime")}
           >
             <Sparkles className={`w-3.5 h-3.5 text-[#FFC83D] ${surpriseLoading ? 'animate-spin' : ''}`} />
             <span>Surprise</span>
+          </button>
+
+          {/* Sélecteur de langue FR / EN */}
+          <button
+            onClick={() => changerLangue(langue === 'fr' ? 'en' : 'fr')}
+            className="px-2.5 py-1.5 text-xs font-bold rounded-lg border border-[#D5DBE8] dark:border-[#27324D] text-[#14213D] dark:text-[#EEF1F8] hover:border-[#2B50FF] transition-colors"
+            title={tr('Changer de langue', 'Change language')}
+            aria-label={tr('Changer de langue', 'Change language')}
+          >
+            {langue === 'fr' ? 'EN' : 'FR'}
           </button>
 
           {/* Theme switcher */}
           <button
             onClick={handleToggleTheme}
             className="p-2 rounded-lg border border-[#D5DBE8] dark:border-[#27324D] text-[#55607A] dark:text-[#A3AEC8] hover:text-[#14213D] dark:hover:text-[#EEF1F8] hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
-            title={`Thème: ${theme} (Cliquer pour basculer)`}
-            aria-label="Basculer le thème"
+            title={`${tr('Thème', 'Theme')}: ${theme} ${tr('(Cliquer pour basculer)', '(Click to toggle)')}`}
+            aria-label={tr("Basculer le thème", "Toggle theme")}
           >
             {theme === 'dark' ? (
               <Moon className="w-4 h-4 text-[#7F95FF]" />
@@ -154,7 +165,7 @@ export const Header: React.FC<HeaderProps> = ({ currentPath, onNavigate }) => {
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#2B50FF] text-white text-xs font-semibold hover:brightness-105 active:scale-95 transition-all whitespace-nowrap shadow-sm shadow-[#2B50FF]/20"
-            title="Ouvrir le bot Telegram @animealert_buea_bot"
+            title={tr("Ouvrir le bot Telegram @animealert_buea_bot", "Open the Telegram bot @animealert_buea_bot")}
           >
             <Bot className="w-4 h-4 text-[#FFC83D]" />
             <span><span className="hidden sm:inline">Bot </span>@animealert_buea_bot</span>
@@ -165,4 +176,4 @@ export const Header: React.FC<HeaderProps> = ({ currentPath, onNavigate }) => {
   );
 };
 
-        
+  
