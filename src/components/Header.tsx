@@ -56,7 +56,7 @@ export const Header: React.FC<HeaderProps> = ({ currentPath, onNavigate }) => {
     }
   };
 
-  const botUrl = lienBot() || "https://t.me/AnimeAlert";
+  const botUrl = lienBot() || "https://t.me/animealert_buea_bot";
 
   const navLinks = [
     { label: 'Accueil', path: '/' },
@@ -154,10 +154,10 @@ export const Header: React.FC<HeaderProps> = ({ currentPath, onNavigate }) => {
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#2B50FF] text-white text-xs font-semibold hover:brightness-105 active:scale-95 transition-all whitespace-nowrap shadow-sm shadow-[#2B50FF]/20"
-            title="Ouvrir le bot Telegram @AnimeAlert"
+            title="Ouvrir le bot Telegram @animealert_buea_bot"
           >
             <Bot className="w-4 h-4 text-[#FFC83D]" />
-            <span><span className="hidden sm:inline">Bot </span>@AnimeAlert</span>
+            <span><span className="hidden sm:inline">Bot </span>@animealert_buea_bot</span>
           </a>
         </div>
       </div>
@@ -165,3 +165,4 @@ export const Header: React.FC<HeaderProps> = ({ currentPath, onNavigate }) => {
   );
 };
 
+        
