@@ -1,3 +1,4 @@
+import { tr } from '../lib/i18n';
 import React, { useState, useEffect } from 'react';
 import { Tag, Sparkles } from 'lucide-react';
 import { anilist } from '../lib/anilist';
@@ -72,11 +73,11 @@ export const GenrePage: React.FC<GenrePageProps> = ({ slug, onNavigate }) => {
         <div className="flex items-center gap-2">
           <Tag className="w-6 h-6 text-[#2B50FF] dark:text-[#7F95FF]" />
           <h1 className="font-['Bricolage_Grotesque'] text-2xl sm:text-3xl font-extrabold text-[#14213D] dark:text-[#EEF1F8]">
-            Animes du genre : {labelFr}
+            {tr('Animes du genre :', 'Anime in the genre:')} {labelFr}
           </h1>
         </div>
         <p className="text-xs sm:text-sm text-[#55607A] dark:text-[#A3AEC8] mt-1">
-          Les animes {labelFr.toLowerCase()} les plus plébiscités par la communauté internationale.
+          {tr(`Les animes ${labelFr.toLowerCase()} les plus plébiscités par la communauté internationale.`, `The most acclaimed ${labelFr.toLowerCase()} anime of the international community.`)}
         </p>
       </div>
 
@@ -111,7 +112,7 @@ export const GenrePage: React.FC<GenrePageProps> = ({ slug, onNavigate }) => {
       ) : medias.length === 0 ? (
         <div className="p-8 text-center rounded-2xl border border-dashed border-[#D5DBE8] dark:border-[#27324D]">
           <p className="text-sm font-semibold text-[#14213D] dark:text-[#EEF1F8]">
-            Aucun anime trouvé pour ce genre.
+            {tr("Aucun anime trouvé pour ce genre.", "No anime found for this genre.")}
           </p>
         </div>
       ) : (
@@ -124,3 +125,4 @@ export const GenrePage: React.FC<GenrePageProps> = ({ slug, onNavigate }) => {
     </div>
   );
 };
+                     
