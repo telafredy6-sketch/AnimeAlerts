@@ -68,13 +68,13 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           <ul className="space-y-2 text-xs">
             <li>
               <a
-                href="https://t.me/AnimeAlert"
+                href="https://t.me/animealert_buea_bot"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 font-semibold text-[#2B50FF] dark:text-[#7F95FF] hover:underline"
               >
                 <span className="w-2 h-2 rounded-full bg-[#FFC83D]"></span>
-                <span>Bot Telegram @AnimeAlert</span>
+                <span>Bot Telegram @animealert_buea_bot</span>
                 <ExternalLink className="w-2.5 h-2.5 opacity-70" />
               </a>
             </li>
@@ -115,3 +115,4 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
     </footer>
   );
 };
+            
