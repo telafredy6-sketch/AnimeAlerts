@@ -1,3 +1,4 @@
+import { tr } from './i18n';
 import { CONFIG } from './config';
 
 const malCache = new Map<number, { score: number | null; expiry: number }>();
@@ -78,11 +79,11 @@ export function analyseNotes(aniScore10?: number | null, malScore?: number | nul
 
   if (scores.length < 2) {
     if (scores.length === 1) {
-      if (scores[0].val >= 8.5) return "Anime d'exception plébiscité par la communauté.";
-      if (scores[0].val >= 7.5) return "Très bonne appréciation générale.";
-      return "Note communautaire convenable.";
+      if (scores[0].val >= 8.5) return tr("Anime d'exception plébiscité par la communauté.", "Outstanding anime acclaimed by the community.");
+      if (scores[0].val >= 7.5) return tr("Très bonne appréciation générale.", "Very good overall reception.");
+      return tr("Note communautaire convenable.", "Decent community rating.");
     }
-    return "Notes en cours de collecte auprès de la communauté.";
+    return tr("Notes en cours de collecte auprès de la communauté.", "Ratings are still being collected from the community.");
   }
 
   const ani = scores.find(s => s.name === 'AniList')?.val;
@@ -92,23 +93,23 @@ export function analyseNotes(aniScore10?: number | null, malScore?: number | nul
   if (ani && mal) {
     const diff = Math.abs(ani - mal);
     if (diff <= 0.3) {
-      return `Harmonie forte entre AniList (${ani.toFixed(1)}) et MyAnimeList (${mal.toFixed(2)}) — avis très unanime !`;
+      return tr(`Harmonie forte entre AniList (${ani.toFixed(1)}) et MyAnimeList (${mal.toFixed(2)}) — avis très unanime !`, `Strong agreement between AniList (${ani.toFixed(1)}) and MyAnimeList (${mal.toFixed(2)}) — a very unanimous opinion!`);
     }
     if (ani > mal) {
-      return `AniList surévalue de ${(ani - mal).toFixed(1)} point par rapport à MyAnimeList.`;
+      return tr(`AniList surévalue de ${(ani - mal).toFixed(1)} point par rapport à MyAnimeList.`, `AniList rates it ${(ani - mal).toFixed(1)} points higher than MyAnimeList.`);
     }
-    return `MyAnimeList est plus enthousiaste de ${(mal - ani).toFixed(1)} point qu'AniList.`;
+    return tr(`MyAnimeList est plus enthousiaste de ${(mal - ani).toFixed(1)} point qu'AniList.`, `MyAnimeList is ${(mal - ani).toFixed(1)} points more enthusiastic than AniList.`);
   }
 
   if (ani && imdb) {
     const diff = (imdb - ani).toFixed(1);
     if (Math.abs(Number(diff)) <= 0.4) {
-      return `Évaluation équivalente entre public anime (${ani.toFixed(1)}) et grand public IMDb (${imdb.toFixed(1)}).`;
+      return tr(`Évaluation équivalente entre public anime (${ani.toFixed(1)}) et grand public IMDb (${imdb.toFixed(1)}).`, `Equivalent rating between the anime audience (${ani.toFixed(1)}) and the general IMDb audience (${imdb.toFixed(1)}).`);
     }
     return Number(diff) < 0
-      ? `IMDb est de ${Math.abs(Number(diff))} point en dessous d'AniList.`
-      : `IMDb note plus généreusement (+${diff}) que la communauté d'AniList.`;
+      ? tr(`IMDb est de ${Math.abs(Number(diff))} point en dessous d'AniList.`, `IMDb is ${Math.abs(Number(diff))} points below AniList.`)
+      : tr(`IMDb note plus généreusement (+${diff}) que la communauté d'AniList.`, `IMDb rates more generously (+${diff}) than the AniList community.`);
   }
 
-  return "Notes moyennes solides sur l'ensemble des plateformes.";
+  return tr("Notes moyennes solides sur l'ensemble des plateformes.", "Solid average ratings across all platforms.");
 }
