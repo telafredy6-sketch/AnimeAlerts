@@ -1,3 +1,4 @@
+import { tr, LOCALE } from '../lib/i18n';
 import React, { useState, useEffect } from 'react';
 import { Calendar as CalendarIcon, Clock, Filter, ChevronRight, Play } from 'lucide-react';
 import { anilist, QUERY_CALENDRIER_7J } from '../lib/anilist';
@@ -33,10 +34,10 @@ export const CalendarPage: React.FC<CalendarPageProps> = ({ onNavigate }) => {
       timestamp: Math.floor(d.getTime() / 1000),
       label:
         i === 0
-          ? "Aujourd'hui"
+          ? tr("Aujourd'hui", "Today")
           : i === 1
-          ? "Demain"
-          : d.toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short" })
+          ? tr("Demain", "Tomorrow")
+          : d.toLocaleDateString(LOCALE, { weekday: "short", day: "numeric", month: "short" })
     };
   });
 
@@ -89,11 +90,11 @@ export const CalendarPage: React.FC<CalendarPageProps> = ({ onNavigate }) => {
         <div className="flex items-center gap-2">
           <CalendarIcon className="w-6 h-6 text-[#2B50FF] dark:text-[#7F95FF]" />
           <h1 className="font-['Bricolage_Grotesque'] text-2xl sm:text-3xl font-extrabold text-[#14213D] dark:text-[#EEF1F8]">
-            Planning hebdomadaire des sorties
+            {tr("Planning hebdomadaire des sorties", "Weekly release schedule")}
           </h1>
         </div>
         <p className="text-xs sm:text-sm text-[#55607A] dark:text-[#A3AEC8] mt-1">
-          Tous les épisodes diffusés sur les 7 prochains jours · Horaires calés sur le fuseau du Cameroun (Africa/Douala).
+          {tr("Tous les épisodes diffusés sur les 7 prochains jours · Horaires calés sur le fuseau du Cameroun (Africa/Douala).", "All episodes airing over the next 7 days · Times set to the Cameroon time zone (Africa/Douala).")}
         </p>
       </div>
 
@@ -119,7 +120,7 @@ export const CalendarPage: React.FC<CalendarPageProps> = ({ onNavigate }) => {
               <span className="capitalize">{jour.label}</span>
               {!chargement && (
                 <span className={`text-[10px] mt-0.5 tabular-nums ${isSelected ? 'text-white/80' : 'text-[#55607A] dark:text-[#A3AEC8]'}`}>
-                  {count} {count > 1 ? 'épisodes' : 'épisode'}
+                  {count} {count > 1 ? tr('épisodes', 'episodes') : tr('épisode', 'episode')}
                 </span>
               )}
             </button>
@@ -131,10 +132,10 @@ export const CalendarPage: React.FC<CalendarPageProps> = ({ onNavigate }) => {
       <div className="flex items-center justify-between text-xs text-[#55607A] dark:text-[#A3AEC8] pt-2">
         <span className="font-medium">
           {chargement ? (
-            'Chargement du planning...'
+            tr('Chargement du planning...', 'Loading schedule...')
           ) : (
             <strong className="text-[#14213D] dark:text-[#EEF1F8] tabular-nums">
-              {filteredEpisodes.length} sortie(s) prévue(s)
+              {filteredEpisodes.length} {tr('sortie(s) prévue(s)', 'release(s) scheduled')}
             </strong>
           )}
         </span>
@@ -146,9 +147,9 @@ export const CalendarPage: React.FC<CalendarPageProps> = ({ onNavigate }) => {
             onChange={(e) => setFormatFilter(e.target.value)}
             className="p-1.5 rounded-lg border border-[#D5DBE8] dark:border-[#27324D] bg-[#FFFFFF] dark:bg-[#161F35] text-[#14213D] dark:text-[#EEF1F8] text-xs outline-none"
           >
-            <option value="">Tous formats</option>
-            <option value="TV">Séries TV</option>
-            <option value="MOVIE">Films</option>
+            <option value="">{tr("Tous formats", "All formats")}</option>
+            <option value="TV">{tr("Séries TV", "TV series")}</option>
+            <option value="MOVIE">{tr("Films", "Movies")}</option>
             <option value="OVA">OVA</option>
             <option value="ONA">ONA</option>
           </select>
@@ -165,10 +166,10 @@ export const CalendarPage: React.FC<CalendarPageProps> = ({ onNavigate }) => {
       ) : filteredEpisodes.length === 0 ? (
         <div className="p-8 text-center rounded-2xl border border-dashed border-[#D5DBE8] dark:border-[#27324D] space-y-2">
           <p className="text-sm font-semibold text-[#14213D] dark:text-[#EEF1F8]">
-            Aucune diffusion répertoriée pour ce jour avec ces critères.
+            {tr("Aucune diffusion répertoriée pour ce jour avec ces critères.", "No airings listed for this day with these criteria.")}
           </p>
           <p className="text-xs text-[#55607A] dark:text-[#A3AEC8]">
-            Consulte les autres jours de la semaine ou retire les filtres.
+            {tr("Consulte les autres jours de la semaine ou retire les filtres.", "Check the other days of the week or remove the filters.")}
           </p>
         </div>
       ) : (
@@ -205,14 +206,14 @@ export const CalendarPage: React.FC<CalendarPageProps> = ({ onNavigate }) => {
 
                   <div className="min-w-0 space-y-0.5">
                     <span className="text-[11px] font-semibold text-[#2B50FF] dark:text-[#7F95FF]">
-                      Épisode {item.episode} · {formatStr}
+                      {tr('Épisode', 'Episode')} {item.episode} · {formatStr}
                     </span>
                     <h3 className="font-bold text-sm text-[#14213D] dark:text-[#EEF1F8] truncate group-hover:text-[#2B50FF] transition-colors">
                       {titre}
                     </h3>
                     <p className="text-xs text-[#55607A] dark:text-[#A3AEC8] flex items-center gap-1">
                       <Clock className="w-3 h-3 text-amber-500" />
-                      <span>{heure} (Cameroun)</span>
+                      <span>{heure} {tr('(Cameroun)', '(Cameroon)')}</span>
                     </p>
                   </div>
                 </div>
@@ -222,7 +223,7 @@ export const CalendarPage: React.FC<CalendarPageProps> = ({ onNavigate }) => {
                     {formatCompteARebours(diff)}
                   </span>
                   <span className="text-[10px] text-[#55607A] dark:text-[#A3AEC8]">
-                    {diff > 0 ? 'avant sortie' : 'en ligne'}
+                    {diff > 0 ? tr('avant sortie', 'until release') : tr('en ligne', 'online')}
                   </span>
                 </div>
               </div>
@@ -233,3 +234,4 @@ export const CalendarPage: React.FC<CalendarPageProps> = ({ onNavigate }) => {
     </div>
   );
 };
+    
