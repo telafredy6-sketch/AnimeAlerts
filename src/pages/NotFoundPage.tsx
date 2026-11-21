@@ -1,3 +1,4 @@
+import { tr } from '../lib/i18n';
 import React, { useState } from 'react';
 import { HelpCircle, Search, Home, ChevronRight } from 'lucide-react';
 
@@ -26,10 +27,10 @@ export const NotFoundPage: React.FC<NotFoundPageProps> = ({ onNavigate }) => {
           404
         </span>
         <h1 className="font-['Bricolage_Grotesque'] text-2xl font-bold text-[#14213D] dark:text-[#EEF1F8]">
-          Page ou anime introuvable
+          {tr("Page ou anime introuvable", "Page or anime not found")}
         </h1>
         <p className="text-xs sm:text-sm text-[#55607A] dark:text-[#A3AEC8] max-w-sm mx-auto">
-          L'adresse demandée n'existe pas ou la fiche a été déplacée. Lance une recherche ci-dessous pour trouver ton anime.
+          {tr("L'adresse demandée n'existe pas ou la fiche a été déplacée. Lance une recherche ci-dessous pour trouver ton anime.", "The requested address does not exist or the page has been moved. Run a search below to find your anime.")}
         </p>
       </div>
 
@@ -40,7 +41,7 @@ export const NotFoundPage: React.FC<NotFoundPageProps> = ({ onNavigate }) => {
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Ex. Bleach, Naruto, Dandadan..."
+            placeholder={tr("Ex. Bleach, Naruto, Dandadan...", "E.g. Bleach, Naruto, Dandadan...")}
             className="w-full pl-10 pr-3 py-2.5 rounded-xl border border-[#D5DBE8] dark:border-[#27324D] bg-[#FFFFFF] dark:bg-[#161F35] text-[#14213D] dark:text-[#EEF1F8] text-xs sm:text-sm outline-none focus:border-[#2B50FF]"
           />
         </div>
@@ -48,7 +49,7 @@ export const NotFoundPage: React.FC<NotFoundPageProps> = ({ onNavigate }) => {
           type="submit"
           className="px-4 py-2.5 rounded-xl bg-[#2B50FF] text-white text-xs font-semibold hover:brightness-105 transition-all"
         >
-          Chercher
+          {tr("Chercher", "Search")}
         </button>
       </form>
 
@@ -58,16 +59,17 @@ export const NotFoundPage: React.FC<NotFoundPageProps> = ({ onNavigate }) => {
           className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#FFFFFF] dark:bg-[#161F35] border border-[#D5DBE8] dark:border-[#27324D] text-xs font-semibold text-[#14213D] dark:text-[#EEF1F8] hover:border-[#2B50FF] transition-colors"
         >
           <Home className="w-3.5 h-3.5" />
-          <span>Retour à l'accueil</span>
+          <span>{tr("Retour à l'accueil", "Back to home")}</span>
         </button>
         <button
           onClick={() => onNavigate('/recherche')}
           className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-[#2B50FF] dark:text-[#7F95FF] hover:underline"
         >
-          <span>Voir le catalogue</span>
+          <span>{tr("Voir le catalogue", "View the catalog")}</span>
           <ChevronRight className="w-3.5 h-3.5" />
         </button>
       </div>
     </div>
   );
 };
+              
