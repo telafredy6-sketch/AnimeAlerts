@@ -1,3 +1,4 @@
+import { tr } from '../lib/i18n';
 import React, { useState, useEffect } from 'react';
 import { Calendar, ChevronRight, Filter } from 'lucide-react';
 import { anilist } from '../lib/anilist';
@@ -72,11 +73,11 @@ export const SeasonPage: React.FC<SeasonPageProps> = ({ annee, saisonSlug, onNav
         <div className="flex items-center gap-2">
           <Calendar className="w-6 h-6 text-[#2B50FF] dark:text-[#7F95FF]" />
           <h1 className="font-['Bricolage_Grotesque'] text-2xl sm:text-3xl font-extrabold text-[#14213D] dark:text-[#EEF1F8]">
-            Animes de la saison : {saisonItem.label} {anneeVal}
+            {tr('Animes de la saison :', 'Anime of the season:')} {saisonItem.label} {anneeVal}
           </h1>
         </div>
         <p className="text-xs sm:text-sm text-[#55607A] dark:text-[#A3AEC8] mt-1">
-          Les animes les plus populaires diffusés durant la saison {saisonItem.label.toLowerCase()} {anneeVal}.
+          {tr(`Les animes les plus populaires diffusés durant la saison ${saisonItem.label.toLowerCase()} ${anneeVal}.`, `The most popular anime airing during the ${saisonItem.label.toLowerCase()} ${anneeVal} season.`)}
         </p>
       </div>
 
@@ -104,7 +105,7 @@ export const SeasonPage: React.FC<SeasonPageProps> = ({ annee, saisonSlug, onNav
 
         {/* Year dropdown */}
         <div className="flex items-center gap-2 text-xs">
-          <span className="text-[#55607A] dark:text-[#A3AEC8] font-medium">Année :</span>
+          <span className="text-[#55607A] dark:text-[#A3AEC8] font-medium">{tr("Année :", "Year:")}</span>
           <select
             value={anneeVal}
             onChange={(e) => onNavigate(`/saison/${e.target.value}/${saisonItem.slug}`)}
@@ -129,7 +130,7 @@ export const SeasonPage: React.FC<SeasonPageProps> = ({ annee, saisonSlug, onNav
       ) : medias.length === 0 ? (
         <div className="p-8 text-center rounded-2xl border border-dashed border-[#D5DBE8] dark:border-[#27324D]">
           <p className="text-sm font-semibold text-[#14213D] dark:text-[#EEF1F8]">
-            Aucun anime répertorié pour la saison {saisonItem.label} {anneeVal}.
+            {tr(`Aucun anime répertorié pour la saison ${saisonItem.label} ${anneeVal}.`, `No anime listed for the ${saisonItem.label} ${anneeVal} season.`)}
           </p>
         </div>
       ) : (
@@ -142,3 +143,4 @@ export const SeasonPage: React.FC<SeasonPageProps> = ({ annee, saisonSlug, onNav
     </div>
   );
 };
+      
