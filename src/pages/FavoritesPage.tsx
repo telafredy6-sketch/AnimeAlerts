@@ -21,6 +21,7 @@ import {
   importerFavorisJSON
 } from '../lib/favoris';
 import { FORMATS } from '../lib/config';
+import { PushNotificationsPanel } from '../components/PushNotificationsPanel';
 
 interface FavoritesPageProps {
   onNavigate: (path: string) => void;
@@ -165,6 +166,9 @@ export const FavoritesPage: React.FC<FavoritesPageProps> = ({ onNavigate }) => {
           {messageFeedback}
         </div>
       )}
+
+      {/* Push alerts for favorites */}
+      <PushNotificationsPanel compact />
 
       {/* Global Progress Metrics Strip */}
       {totalAnimes > 0 && (

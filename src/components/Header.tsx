@@ -4,6 +4,7 @@ import { Heart, Sun, Moon, Monitor, Send, Sparkles, Bot } from 'lucide-react';
 import { lireFavoris } from '../lib/favoris';
 import { lireThemeActuel, appliquerTheme, ThemeMode } from '../lib/theme';
 import { PWAInstallButton } from './PWAInstallButton';
+import { AppLogo } from './AppLogo';
 import { fetchSurpriseAnime } from '../lib/anilist';
 import { lienBot } from '../lib/format';
 
@@ -79,10 +80,7 @@ export const Header: React.FC<HeaderProps> = ({ currentPath, onNavigate }) => {
           onClick={() => onNavigate('/')}
           className="flex items-center gap-2.5 text-left group whitespace-nowrap shrink-0 focus-visible:outline-2 focus-visible:outline-[#2B50FF]"
         >
-          <span className="relative flex h-3.5 w-3.5 items-center justify-center">
-            <span className="absolute inline-flex h-full w-full rounded-full bg-[#FFC83D] opacity-75 group-hover:scale-125 transition-transform"></span>
-            <span className="relative inline-flex rounded-full h-3 w-3 bg-[#FFC83D] ring-2 ring-[#2B50FF]"></span>
-          </span>
+          <AppLogo size={28} className="transition-transform group-hover:scale-105" />
           <span className="font-['Bricolage_Grotesque'] text-xl font-extrabold tracking-tight text-[#14213D] dark:text-[#EEF1F8]">
             AnimeAlert <span className="text-[#2B50FF] dark:text-[#7F95FF]">Buea</span>
           </span>

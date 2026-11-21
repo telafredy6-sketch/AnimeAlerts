@@ -4,6 +4,10 @@ import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 import { MobileNav } from './components/MobileNav';
 import { OfflineIndicator } from './components/OfflineIndicator';
+import {
+  checkUpcomingCameroonEpisodes,
+  syncStateToServiceWorker
+} from './lib/notifications';
 
 // Pages
 import { HomePage } from './pages/HomePage';
@@ -19,6 +23,39 @@ import { NotFoundPage } from './pages/NotFoundPage';
 
 export default function App() {
   const { pathname, searchParams, route, navigate } = useRouter();
+
+  // Sync Service Worker notification state & schedule Cameroon airing checks
+  useEffect(() => {
+    void syncStateToServiceWorker();
+    void checkUpcomingCameroonEpisodes();
+
+    const interval = setInterval(() => {
+      void checkUpcomingCameroonEpisodes();
+    }, 60 * 1000);
+
+    const handleFavSync = () => {
+      void syncStateToServiceWorker();
+    };
+    window.addEventListener('favoris:change', handleFavSync);
+
+    const handleSwMessage = (event: MessageEvent) => {
+      if (event.data?.type === 'NAVIGATE_FROM_NOTIFICATION' && typeof event.data.url === 'string') {
+        navigate(event.data.url);
+      }
+    };
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.addEventListener('message', handleSwMessage);
+    }
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('favoris:change', handleFavSync);
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.removeEventListener('message', handleSwMessage);
+      }
+    };
+  }, [navigate]);
 
   // Handle intercepting internal links (<a href="/...">) so they use SPA router
   useEffect(() => {

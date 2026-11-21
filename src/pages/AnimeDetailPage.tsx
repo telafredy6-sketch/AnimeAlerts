@@ -38,6 +38,7 @@ import {
   sauvegarderProgression
 } from '../lib/favoris';
 import { fetchJikanScore, fetchOmdbRating, analyseNotes } from '../lib/notes';
+import { isAnimeSubscribed, toggleAnimeSubscription } from '../lib/notifications';
 
 interface AnimeDetailPageProps {
   id: string;
@@ -88,8 +89,9 @@ export const AnimeDetailPage: React.FC<AnimeDetailPageProps> = ({ id, onNavigate
         }
         setAnime(media);
 
-        // Init favori & progression
+        // Init favori, progression & alerte push
         setIsFav(estFavori(animeId));
+        setNotificationActivee(isAnimeSubscribed(animeId));
         const prog = lireProgression(animeId);
         setEpisodesVus(prog.episodesVus || 0);
 
@@ -181,17 +183,15 @@ export const AnimeDetailPage: React.FC<AnimeDetailPageProps> = ({ id, onNavigate
   };
 
   const handleActiverNotification = async () => {
+    if (!anime) return;
     if (!('Notification' in window)) {
       alert(tr("Les notifications ne sont pas prises en charge par ce navigateur.", "Notifications are not supported by this browser."));
       return;
     }
-    const permission = await Notification.requestPermission();
-    if (permission === 'granted') {
-      setNotificationActivee(true);
-      new Notification("AnimeAlert Buea", {
-        body: tr(`Rappel activé pour ${titreDe(anime?.title)} ! Tu seras prévenu avant les prochains épisodes.`, `Reminder enabled for ${titreDe(anime?.title)}! You'll be notified before upcoming episodes.`),
-        icon: '/favicon.svg'
-      });
+    const res = await toggleAnimeSubscription(anime.id, titreDe(anime.title));
+    setNotificationActivee(res.subscribed);
+    if (res.permission === 'denied') {
+      alert(tr("Les notifications sont bloquées par ton navigateur. Autorise-les dans les paramètres du site.", "Notifications are blocked by your browser. Allow them in site settings."));
     }
   };
 

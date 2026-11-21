@@ -1,10 +1,12 @@
 import { tr, LOCALE } from '../lib/i18n';
 import React, { useState, useEffect } from 'react';
-import { Calendar as CalendarIcon, Clock, Filter, ChevronRight, Play } from 'lucide-react';
+import { Calendar as CalendarIcon, Clock, Filter, Bell, BellRing, Play } from 'lucide-react';
 import { anilist, QUERY_CALENDRIER_7J } from '../lib/anilist';
 import { AiringScheduleItem } from '../lib/types';
-import { heureCameroun, jourCamerounCourt, titreDe, formatCompteARebours } from '../lib/format';
-import { FORMATS, GENRES_FR } from '../lib/config';
+import { heureCameroun, titreDe, formatCompteARebours } from '../lib/format';
+import { FORMATS } from '../lib/config';
+import { PushNotificationsPanel } from '../components/PushNotificationsPanel';
+import { lireNotificationPrefs, toggleAnimeSubscription } from '../lib/notifications';
 
 interface CalendarPageProps {
   onNavigate: (path: string) => void;
@@ -16,12 +18,20 @@ export const CalendarPage: React.FC<CalendarPageProps> = ({ onNavigate }) => {
   const [selectedDayOffset, setSelectedDayOffset] = useState<number>(0); // 0 = aujourd'hui, 1 = demain, etc.
   const [formatFilter, setFormatFilter] = useState<string>('');
   const [maintenant, setMaintenant] = useState(() => Math.floor(Date.now() / 1000));
+  const [subscribedIds, setSubscribedIds] = useState<number[]>(() => lireNotificationPrefs().subscribedIds);
 
   useEffect(() => {
     const timer = setInterval(() => {
       setMaintenant(Math.floor(Date.now() / 1000));
     }, 1000);
-    return () => clearInterval(timer);
+    const handleNotifChange = () => {
+      setSubscribedIds(lireNotificationPrefs().subscribedIds);
+    };
+    window.addEventListener('animealert:notifications-change', handleNotifChange);
+    return () => {
+      clearInterval(timer);
+      window.removeEventListener('animealert:notifications-change', handleNotifChange);
+    };
   }, []);
 
   // Calcul des 7 prochains jours (start of day timestamps en UTC / local)
@@ -97,6 +107,9 @@ export const CalendarPage: React.FC<CalendarPageProps> = ({ onNavigate }) => {
           {tr("Tous les épisodes diffusés sur les 7 prochains jours · Horaires calés sur le fuseau du Cameroun (Africa/Douala).", "All episodes airing over the next 7 days · Times set to the Cameroon time zone (Africa/Douala).")}
         </p>
       </div>
+
+      {/* Panneau notifications push Cameroun */}
+      <PushNotificationsPanel />
 
       {/* 7 Days Selector Bar */}
       <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
@@ -218,13 +231,40 @@ export const CalendarPage: React.FC<CalendarPageProps> = ({ onNavigate }) => {
                   </div>
                 </div>
 
-                <div className="text-right shrink-0 ml-3">
-                  <span className="font-['Bricolage_Grotesque'] text-sm sm:text-base font-extrabold text-[#1F3FD6] dark:text-[#7F95FF] tabular-nums block">
-                    {formatCompteARebours(diff)}
-                  </span>
-                  <span className="text-[10px] text-[#55607A] dark:text-[#A3AEC8]">
-                    {diff > 0 ? tr('avant sortie', 'until release') : tr('en ligne', 'online')}
-                  </span>
+                <div className="flex items-center gap-2.5 shrink-0 ml-3">
+                  <div className="text-right">
+                    <span className="font-['Bricolage_Grotesque'] text-sm sm:text-base font-extrabold text-[#1F3FD6] dark:text-[#7F95FF] tabular-nums block">
+                      {formatCompteARebours(diff)}
+                    </span>
+                    <span className="text-[10px] text-[#55607A] dark:text-[#A3AEC8]">
+                      {diff > 0 ? tr('avant sortie', 'until release') : tr('en ligne', 'online')}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      await toggleAnimeSubscription(item.media.id, titre);
+                      setSubscribedIds(lireNotificationPrefs().subscribedIds);
+                    }}
+                    className={`min-h-[40px] min-w-[40px] flex items-center justify-center rounded-xl border transition-colors ${
+                      subscribedIds.includes(item.media.id)
+                        ? 'bg-[#2B50FF] border-[#2B50FF] text-white'
+                        : 'bg-[#F2F4F8] dark:bg-[#0D1322] border-[#D5DBE8] dark:border-[#27324D] text-[#55607A] dark:text-[#A3AEC8] hover:border-[#2B50FF]'
+                    }`}
+                    title={
+                      subscribedIds.includes(item.media.id)
+                        ? tr('Désactiver l’alerte push', 'Disable push alert')
+                        : tr('M’avertir par notification push', 'Notify me via push alert')
+                    }
+                    aria-label={tr('Alerte push pour cet anime', 'Push alert for this anime')}
+                  >
+                    {subscribedIds.includes(item.media.id) ? (
+                      <BellRing className="w-4 h-4" />
+                    ) : (
+                      <Bell className="w-4 h-4" />
+                    )}
+                  </button>
                 </div>
               </div>
             );

@@ -2,6 +2,7 @@ import { tr } from '../lib/i18n';
 import React from 'react';
 import { Send, Heart, ExternalLink } from 'lucide-react';
 import { CONFIG } from '../lib/config';
+import { AppLogo } from './AppLogo';
 
 interface FooterProps {
   onNavigate: (path: string) => void;
@@ -13,8 +14,8 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
       <div className="w-[min(1180px,100%-2rem)] mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
         {/* Col 1: Brand & Presentation */}
         <div className="md:col-span-2 space-y-3">
-          <div className="flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full bg-[#FFC83D] ring-2 ring-[#2B50FF]"></span>
+          <div className="flex items-center gap-2.5">
+            <AppLogo size={24} />
             <span className="font-['Bricolage_Grotesque'] text-lg font-extrabold text-[#14213D] dark:text-[#EEF1F8]">
               AnimeAlert Buea
             </span>
