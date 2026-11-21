@@ -39,11 +39,11 @@ export const PWAInstallButton: React.FC<{ variant?: 'header' | 'banner' }> = ({ 
     return (
       <button
         onClick={install}
-        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-[#2B50FF] text-white hover:brightness-105 active:scale-95 transition-all shadow-sm"
+        className="inline-flex items-center gap-1.5 h-9 px-3 text-xs font-semibold rounded-xl border border-[#D5DBE8] dark:border-[#27324D] text-[#14213D] dark:text-[#EEF1F8] hover:border-[#2B50FF] transition-colors whitespace-nowrap"
         title={tr("Installer l'application sur ton appareil", "Install the app on your device")}
       >
-        <Download className="w-3.5 h-3.5" />
-        <span className="hidden sm:inline">{tr("Installer l'app", "Install the app")}</span>
+        <Download className="w-3.5 h-3.5 text-[#2B50FF] dark:text-[#7F95FF]" />
+        <span className="hidden xl:inline">{tr("Installer", "Install")}</span>
       </button>
     );
   }
@@ -54,11 +54,11 @@ export const PWAInstallButton: React.FC<{ variant?: 'header' | 'banner' }> = ({ 
       <>
         <button
           onClick={() => setShowIOSGuide(true)}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border border-[#D5DBE8] dark:border-[#27324D] text-[#14213D] dark:text-[#EEF1F8] hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+          className="inline-flex items-center gap-1.5 h-9 px-3 text-xs font-semibold rounded-xl border border-[#D5DBE8] dark:border-[#27324D] text-[#14213D] dark:text-[#EEF1F8] hover:border-[#2B50FF] transition-colors whitespace-nowrap"
           title={tr("Installer sur iPhone / iPad", "Install on iPhone / iPad")}
         >
           <Smartphone className="w-3.5 h-3.5 text-[#2B50FF]" />
-          <span className="hidden sm:inline">{tr("Installer sur iOS", "Install on iOS")}</span>
+          <span className="hidden xl:inline">{tr("Installer", "Install")}</span>
         </button>
 
         {showIOSGuide && (

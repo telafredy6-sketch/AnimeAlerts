@@ -1,17 +1,23 @@
 import { tr } from '../lib/i18n';
-import React, { useState } from 'react';
-import { Send, CheckCircle2, PlusCircle, ExternalLink, ShieldCheck, Users, Sparkles, Bot } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Send, CheckCircle2, PlusCircle, ExternalLink, Users, Sparkles, Bot } from 'lucide-react';
 import { CONFIG } from '../lib/config';
 import { lienBot, urlSure } from '../lib/format';
-import { CanalTelegram } from '../lib/types';
 
 interface ChannelsPageProps {
   onNavigate: (path: string) => void;
 }
 
-export const ChannelsPage: React.FC<ChannelsPageProps> = ({ onNavigate }) => {
+export const ChannelsPage: React.FC<ChannelsPageProps> = () => {
   const [selectedCategorie, setSelectedCategorie] = useState<string>('tous');
   const [showProposerModal, setShowProposerModal] = useState(false);
+
+  useEffect(() => {
+    const sp = new URLSearchParams(window.location.search);
+    if (sp.get('proposer') === '1') {
+      setShowProposerModal(true);
+    }
+  }, []);
 
   // Formulaire proposition
   const [propNom, setPropNom] = useState('');
@@ -78,14 +84,14 @@ export const ChannelsPage: React.FC<ChannelsPageProps> = ({ onNavigate }) => {
 
       {/* Bot Telegram Highlight Banner */}
       {bot && (
-        <section className="p-6 rounded-3xl bg-gradient-to-br from-[#1F3FD6] to-[#14213D] text-white shadow-xl shadow-[#1F3FD6]/15 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <section className="p-6 rounded-2xl bg-gradient-to-br from-[#1F3FD6] to-[#14213D] text-white shadow-lg shadow-[#1F3FD6]/15 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div className="space-y-2 max-w-xl">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-xs font-bold text-[#FFC83D]">
               <Sparkles className="w-3.5 h-3.5" />
               <span>{tr("Bot Telegram Officiel", "Official Telegram Bot")}</span>
             </div>
             <h2 className="font-['Bricolage_Grotesque'] text-2xl font-bold">
-              {tr("Le Bot AnimeAlert Buea", "The AnimeAlert Buea Bot")}
+              Bot AnimeAlert
             </h2>
             <p className="text-xs sm:text-sm text-white/80 leading-relaxed">
               {tr("Ajoute tes séries en favoris directement dans Telegram et reçois un message privé 15 minutes avant la sortie de chaque épisode en heure du Cameroun.", "Add your series to your favorites directly in Telegram and get a private message 15 minutes before each episode airs, in Cameroon time.")}
@@ -95,10 +101,11 @@ export const ChannelsPage: React.FC<ChannelsPageProps> = ({ onNavigate }) => {
             href={bot}
             target="_blank"
             rel="noopener noreferrer"
-            className="px-6 py-3 rounded-2xl bg-[#FFC83D] text-[#14213D] font-bold text-sm hover:brightness-105 active:scale-95 transition-all shadow-md whitespace-nowrap flex items-center gap-2"
+            title="@animealert_buea_bot"
+            className="px-5 py-3 rounded-xl bg-[#FFC83D] text-[#14213D] font-bold text-sm hover:brightness-105 active:scale-95 transition-all shadow-md whitespace-nowrap flex items-center gap-2 shrink-0"
           >
             <Bot className="w-4 h-4 text-[#14213D]" />
-            <span>{tr("Démarrer le Bot (@animealert_buea_bot)", "Start the Bot (@animealert_buea_bot)")}</span>
+            <span>{tr("Démarrer le Bot", "Start the Bot")}</span>
           </a>
         </section>
       )}
@@ -124,14 +131,22 @@ export const ChannelsPage: React.FC<ChannelsPageProps> = ({ onNavigate }) => {
       </div>
 
       {/* Channels Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div
+        className={`grid gap-4 ${
+          filteredCanaux.length === 1
+            ? 'grid-cols-1'
+            : filteredCanaux.length === 2
+            ? 'grid-cols-1 md:grid-cols-2'
+            : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
+        }`}
+      >
         {filteredCanaux.map((canal) => (
           <article
             key={canal.nom}
-            className="flex flex-col justify-between p-5 rounded-3xl bg-[#FFFFFF] dark:bg-[#161F35] border border-[#D5DBE8] dark:border-[#27324D] shadow-sm hover:border-[#2B50FF] hover:shadow-md transition-all space-y-4"
+            className="flex flex-col justify-between p-5 rounded-2xl bg-[#FFFFFF] dark:bg-[#161F35] border border-[#D5DBE8] dark:border-[#27324D] shadow-sm hover:border-[#2B50FF] hover:shadow-md transition-all space-y-4"
           >
             <div className="space-y-2">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-2">
                 {canal.badge && (
                   <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 dark:bg-blue-950/60 text-[#2B50FF] dark:text-[#7F95FF] border border-blue-200 dark:border-blue-900">
                     {canal.badge}
@@ -170,7 +185,7 @@ export const ChannelsPage: React.FC<ChannelsPageProps> = ({ onNavigate }) => {
       {/* Modal Proposer un canal */}
       {showProposerModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="w-full max-w-md rounded-3xl bg-[#FFFFFF] dark:bg-[#161F35] border border-[#D5DBE8] dark:border-[#27324D] p-6 shadow-2xl space-y-4">
+          <div className="w-full max-w-md rounded-2xl bg-[#FFFFFF] dark:bg-[#161F35] border border-[#D5DBE8] dark:border-[#27324D] p-6 shadow-2xl space-y-4">
             <h3 className="font-['Bricolage_Grotesque'] text-lg font-bold text-[#14213D] dark:text-[#EEF1F8]">
               {tr("Proposer un canal Telegram", "Suggest a Telegram channel")}
             </h3>

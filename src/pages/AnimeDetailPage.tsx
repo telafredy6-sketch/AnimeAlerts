@@ -401,10 +401,10 @@ export const AnimeDetailPage: React.FC<AnimeDetailPageProps> = ({ id, onNavigate
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#2B50FF] hover:bg-blue-600 active:scale-95 text-white text-xs font-semibold shadow-md shadow-[#2B50FF]/25 transition-all"
-                title={tr("Suivre cet anime et recevoir un rappel de sortie", "Follow this anime and get a release reminder")}
+                title={tr("Suivre cet anime sur le Bot Telegram (@animealert_buea_bot)", "Follow this anime on the Telegram Bot (@animealert_buea_bot)")}
               >
                 <Bot className="w-4 h-4 text-[#FFC83D]" />
-                <span>{tr("Recevoir les alertes de cet anime sur le Bot @animealert_buea_bot", "Get alerts for this anime on the Bot @animealert_buea_bot")}</span>
+                <span>{tr("Alertes sur le Bot Telegram", "Alerts on Telegram Bot")}</span>
                 <ExternalLink className="w-3 h-3 opacity-70" />
               </a>
             </div>

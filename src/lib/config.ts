@@ -4,17 +4,6 @@ import { CanalTelegram } from './types';
 function buildCanaux(): CanalTelegram[] {
   return [
     {
-      nom: "Bot AnimeAlert (@animealert_buea_bot)",
-      description: tr(
-        "Le bot Telegram officiel : reçois des rappels personnalisés 15 min avant chaque épisode et recherche tes animes directement.",
-        "The official Telegram bot: get personalized reminders 15 min before each episode and search your anime directly."
-      ),
-      lien: "https://t.me/animealert_buea_bot",
-      categorie: "officiel",
-      badge: tr("Bot Officiel 🤖", "Official Bot 🤖"),
-      membres: tr("Actif 24/7", "Active 24/7")
-    },
-    {
       nom: "AnimeAlert Buea",
       description: tr(
         "Le canal officiel : sorties du jour, résumés détaillés, actualités anime et sondages à Buea.",

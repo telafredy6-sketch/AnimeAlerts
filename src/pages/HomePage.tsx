@@ -109,10 +109,11 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
               href="https://t.me/animealert_buea_bot"
               target="_blank"
               rel="noopener noreferrer"
+              title="@animealert_buea_bot"
               className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/10 hover:bg-blue-500/20 text-xs font-semibold text-[#2B50FF] dark:text-[#7F95FF] border border-[#2B50FF]/30 transition-colors"
             >
               <Bot className="w-3.5 h-3.5 text-[#FFC83D]" />
-              <span>{tr("Bot Telegram : @animealert_buea_bot", "Telegram Bot: @animealert_buea_bot")}</span>
+              <span>Bot Telegram</span>
             </a>
           </div>
 
@@ -299,7 +300,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
       </section>
 
       {/* Section : Canaux Telegram & Bot Preview */}
-      <section className="p-6 rounded-3xl bg-gradient-to-br from-[#14213D] to-[#1F3FD6] text-white">
+      <section className="p-6 rounded-2xl bg-gradient-to-br from-[#14213D] to-[#1F3FD6] text-white">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="space-y-1">
             <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/10 text-xs font-semibold text-[#FFC83D]">
@@ -307,7 +308,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
               <span>{tr("Bot & Communauté Otaku Buea", "Bot & Buea Otaku Community")}</span>
             </div>
             <h2 className="font-['Bricolage_Grotesque'] text-2xl font-bold">
-              {tr("Active le Bot Telegram @animealert_buea_bot", "Activate the Telegram Bot @animealert_buea_bot")}
+              {tr("Active le Bot AnimeAlert", "Activate the AnimeAlert Bot")}
             </h2>
             <p className="text-sm text-white/80 max-w-xl">
               {tr("Reçois des alertes 15 minutes avant la sortie des épisodes en heure du Cameroun et rejoins nos canaux d'échange.", "Get alerts 15 minutes before episodes air, in Cameroon time, and join our discussion channels.")}
@@ -318,10 +319,11 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
               href="https://t.me/animealert_buea_bot"
               target="_blank"
               rel="noopener noreferrer"
+              title="@animealert_buea_bot"
               className="px-5 py-2.5 rounded-xl bg-[#FFC83D] text-[#14213D] font-bold text-sm hover:brightness-105 active:scale-95 transition-all whitespace-nowrap shadow-md inline-flex items-center gap-2"
             >
               <Bot className="w-4 h-4 text-[#14213D]" />
-              <span>{tr("Démarrer le Bot (@animealert_buea_bot)", "Start the Bot (@animealert_buea_bot)")}</span>
+              <span>{tr("Démarrer le Bot", "Start the Bot")}</span>
             </a>
             <button
               onClick={() => onNavigate('/canaux')}
