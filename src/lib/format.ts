@@ -1,3 +1,4 @@
+import { tr, LOCALE } from './i18n';
 import { AnimeMedia, AnimeTitle } from './types';
 import { CONFIG } from './config';
 
@@ -22,7 +23,7 @@ export function urlSure(u: string | null | undefined): string {
   }
 }
 
-export function titreDe(titleObj?: AnimeTitle | null, fallback = "Sans titre"): string {
+export function titreDe(titleObj?: AnimeTitle | null, fallback = tr("Sans titre", "Untitled")): string {
   if (!titleObj) return fallback;
   return titleObj.english?.trim() || titleObj.romaji?.trim() || titleObj.native?.trim() || fallback;
 }
@@ -36,7 +37,7 @@ export function titreSecondaire(titleObj?: AnimeTitle | null): string | null {
 }
 
 export function nettoyerDescription(desc: string | null | undefined): string {
-  if (!desc) return "Aucun résumé disponible pour le moment.";
+  if (!desc) return tr("Aucun résumé disponible pour le moment.", "No summary available at the moment.");
   return desc
     .replace(/<br\s*\/?>/gi, "\n")
     .replace(/<i\b[^>]*>(.*?)<\/i>/gi, "$1")
@@ -55,7 +56,7 @@ export function nettoyerDescription(desc: string | null | undefined): string {
  */
 export function heureCameroun(timestampSeconds: number): string {
   try {
-    return new Date(timestampSeconds * 1000).toLocaleTimeString("fr-FR", {
+    return new Date(timestampSeconds * 1000).toLocaleTimeString(LOCALE, {
       hour: "2-digit",
       minute: "2-digit",
       timeZone: "Africa/Douala"
@@ -67,7 +68,7 @@ export function heureCameroun(timestampSeconds: number): string {
 
 export function dateCamerounComplete(timestampSeconds: number): string {
   try {
-    return new Date(timestampSeconds * 1000).toLocaleDateString("fr-FR", {
+    return new Date(timestampSeconds * 1000).toLocaleDateString(LOCALE, {
       weekday: "long",
       day: "numeric",
       month: "long",
@@ -76,13 +77,13 @@ export function dateCamerounComplete(timestampSeconds: number): string {
       timeZone: "Africa/Douala"
     });
   } catch {
-    return "Date inconnue";
+    return tr("Date inconnue", "Unknown date");
   }
 }
 
 export function jourCamerounCourt(timestampSeconds: number): string {
   try {
-    return new Date(timestampSeconds * 1000).toLocaleDateString("fr-FR", {
+    return new Date(timestampSeconds * 1000).toLocaleDateString(LOCALE, {
       weekday: "short",
       day: "numeric",
       month: "short",
@@ -94,7 +95,7 @@ export function jourCamerounCourt(timestampSeconds: number): string {
 }
 
 export function formatCompteARebours(secondesRestantes: number): string {
-  if (secondesRestantes <= 0) return "Disponible !";
+  if (secondesRestantes <= 0) return tr("Disponible !", "Available!");
 
   const jours = Math.floor(secondesRestantes / 86400);
   const heures = Math.floor((secondesRestantes % 86400) / 3600);
@@ -104,7 +105,7 @@ export function formatCompteARebours(secondesRestantes: number): string {
   const pad = (n: number) => String(n).padStart(2, "0");
 
   if (jours > 0) {
-    return `${jours}j ${pad(heures)}h ${pad(minutes)}m`;
+    return `${jours}${tr('j', 'd')} ${pad(heures)}h ${pad(minutes)}m`;
   }
   return `${pad(heures)}:${pad(minutes)}:${pad(secs)}`;
 }
