@@ -97,7 +97,7 @@ export const ChannelsPage: React.FC<ChannelsPageProps> = ({ onNavigate }) => {
             className="px-6 py-3 rounded-2xl bg-[#FFC83D] text-[#14213D] font-bold text-sm hover:brightness-105 active:scale-95 transition-all shadow-md whitespace-nowrap flex items-center gap-2"
           >
             <Bot className="w-4 h-4 text-[#14213D]" />
-            <span>Démarrer le Bot (@AnimeAlert)</span>
+            <span>Démarrer le Bot (@animealert_buea_bot)</span>
           </a>
         </section>
       )}
@@ -264,3 +264,4 @@ export const ChannelsPage: React.FC<ChannelsPageProps> = ({ onNavigate }) => {
     </div>
   );
 };
+  
