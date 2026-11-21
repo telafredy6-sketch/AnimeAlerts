@@ -1,3 +1,4 @@
+import { tr } from '../lib/i18n';
 import React, { useState, useEffect } from 'react';
 import { Home, Search, Calendar, Heart, Send } from 'lucide-react';
 import { lireFavoris } from '../lib/favoris';
@@ -21,16 +22,16 @@ export const MobileNav: React.FC<MobileNavProps> = ({ currentPath, onNavigate })
   }, []);
 
   const navItems = [
-    { label: 'Accueil', path: '/', icon: Home },
-    { label: 'Recherche', path: '/recherche', icon: Search },
-    { label: 'Calendrier', path: '/calendrier', icon: Calendar },
+    { label: tr('Accueil', 'Home'), path: '/', icon: Home },
+    { label: tr('Recherche', 'Search'), path: '/recherche', icon: Search },
+    { label: tr('Calendrier', 'Calendar'), path: '/calendrier', icon: Calendar },
     {
-      label: 'Favoris',
+      label: tr('Favoris', 'Favorites'),
       path: '/favoris',
       icon: Heart,
       badge: favCount > 0 ? favCount : null
     },
-    { label: 'Canaux', path: '/canaux', icon: Send }
+    { label: tr('Canaux', 'Channels'), path: '/canaux', icon: Send }
   ];
 
   return (
@@ -72,3 +73,4 @@ export const MobileNav: React.FC<MobileNavProps> = ({ currentPath, onNavigate })
     </nav>
   );
 };
+  
