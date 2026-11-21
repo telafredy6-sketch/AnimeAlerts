@@ -1,3 +1,4 @@
+import { tr } from '../lib/i18n';
 import React, { useState, useEffect } from 'react';
 import { Search, Sparkles, Clock, Flame, Calendar, Send, ChevronRight, Play, Bot } from 'lucide-react';
 import { anilist, QUERY_SORTIES_24H, QUERY_ACCUEIL_SECTIONS, fetchSurpriseAnime } from '../lib/anilist';
@@ -102,7 +103,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
           <div className="flex flex-wrap items-center gap-2 mb-4">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-900 text-xs font-semibold text-[#2B50FF] dark:text-[#7F95FF]">
               <span className="w-2 h-2 rounded-full bg-[#FFC83D]"></span>
-              <span>Édition Buea & Cameroun · Heure locale UTC+1</span>
+              <span>{tr("Édition Buea & Cameroun · Heure locale UTC+1", "Buea & Cameroon Edition · Local time UTC+1")}</span>
             </div>
             <a
               href="https://t.me/animealert_buea_bot"
@@ -111,16 +112,16 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
               className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/10 hover:bg-blue-500/20 text-xs font-semibold text-[#2B50FF] dark:text-[#7F95FF] border border-[#2B50FF]/30 transition-colors"
             >
               <Bot className="w-3.5 h-3.5 text-[#FFC83D]" />
-              <span>Bot Telegram : @animealert_buea_bot</span>
+              <span>{tr("Bot Telegram : @animealert_buea_bot", "Telegram Bot: @animealert_buea_bot")}</span>
             </a>
           </div>
 
           <h1 className="font-['Bricolage_Grotesque'] text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-[#14213D] dark:text-[#EEF1F8] leading-[1.08] text-balance">
-            Cherche un anime, compare ses notes, ne rate aucune sortie.
+            {tr("Cherche un anime, compare ses notes, ne rate aucune sortie.", "Search for an anime, compare its ratings, never miss a release.")}
           </h1>
 
           <p className="mt-4 text-base sm:text-lg text-[#55607A] dark:text-[#A3AEC8] leading-relaxed max-w-2xl">
-            Toutes les notes croisées (AniList, MyAnimeList, IMDb), le compte à rebours précis des sorties heure du Cameroun, et tes rappels sur Telegram.
+            {tr("Toutes les notes croisées (AniList, MyAnimeList, IMDb), le compte à rebours précis des sorties heure du Cameroun, et tes rappels sur Telegram.", "All ratings side by side (AniList, MyAnimeList, IMDb), precise countdowns to releases in Cameroon time, and your reminders on Telegram.")}
           </p>
 
           {/* Formulaire de recherche */}
@@ -131,7 +132,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                 type="search"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Ex. One Piece, Frieren, Jujutsu Kaisen..."
+                placeholder={tr("Ex. One Piece, Frieren, Jujutsu Kaisen...", "E.g. One Piece, Frieren, Jujutsu Kaisen...")}
                 className="w-full pl-11 pr-4 py-3.5 rounded-xl border-2 border-[#D5DBE8] dark:border-[#27324D] bg-[#FFFFFF] dark:bg-[#161F35] text-[#14213D] dark:text-[#EEF1F8] placeholder-[#55607A]/60 focus:border-[#2B50FF] dark:focus:border-[#7F95FF] outline-none text-base transition-colors"
               />
             </div>
@@ -140,14 +141,14 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
               className="px-6 py-3.5 rounded-xl bg-[#2B50FF] text-white font-semibold hover:brightness-105 active:scale-95 transition-all text-sm sm:text-base flex items-center justify-center gap-2 shadow-md shadow-[#2B50FF]/25"
             >
               <Search className="w-4 h-4" />
-              <span>Chercher</span>
+              <span>{tr("Chercher", "Search")}</span>
             </button>
             <button
               type="button"
               onClick={handleSurprise}
               disabled={surpriseLoading}
               className="px-4 py-3.5 rounded-xl border border-[#D5DBE8] dark:border-[#27324D] bg-[#FFFFFF] dark:bg-[#161F35] text-[#14213D] dark:text-[#EEF1F8] font-semibold hover:border-[#2B50FF] transition-all text-sm flex items-center justify-center gap-1.5"
-              title="Ouvrir un anime au hasard"
+              title={tr("Ouvrir un anime au hasard", "Open a random anime")}
             >
               <Sparkles className={`w-4 h-4 text-[#FFC83D] ${surpriseLoading ? 'animate-spin' : ''}`} />
               <span className="hidden sm:inline">Surprise</span>
@@ -156,7 +157,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
 
           {/* Suggestions instantanées */}
           <div className="mt-3.5 flex flex-wrap items-center gap-2 text-xs text-[#55607A] dark:text-[#A3AEC8]">
-            <span className="font-medium">Populaires :</span>
+            <span className="font-medium">{tr("Populaires :", "Popular:")}</span>
             {suggestions.map((titre) => (
               <button
                 key={titre}
@@ -179,18 +180,18 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
               <div className="flex items-center gap-2">
                 <Clock className="w-5 h-5 text-[#2B50FF] dark:text-[#7F95FF]" />
                 <h2 className="font-['Bricolage_Grotesque'] text-xl sm:text-2xl font-bold text-[#14213D] dark:text-[#EEF1F8]">
-                  Ça sort dans les prochaines 24h
+                  {tr("Ça sort dans les prochaines 24h", "Coming out in the next 24h")}
                 </h2>
               </div>
               <p className="text-xs sm:text-sm text-[#55607A] dark:text-[#A3AEC8] mt-0.5">
-                Comptes à rebours en temps réel · Heure locale du Cameroun (Africa/Douala).
+                {tr("Comptes à rebours en temps réel · Heure locale du Cameroun (Africa/Douala).", "Real-time countdowns · Cameroon local time (Africa/Douala).")}
               </p>
             </div>
             <button
               onClick={() => onNavigate('/calendrier')}
               className="text-xs sm:text-sm font-semibold text-[#2B50FF] dark:text-[#7F95FF] hover:underline flex items-center gap-1"
             >
-              <span>Planning 7 jours</span>
+              <span>{tr("Planning 7 jours", "7-day schedule")}</span>
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>
@@ -212,7 +213,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                       {formatCompteARebours(diff)}
                     </span>
                     <span className="px-2 py-0.5 rounded-full bg-white/20 text-[11px] font-semibold whitespace-nowrap">
-                      Épisode {item.episode}
+                      {tr('Épisode', 'Episode')} {item.episode}
                     </span>
                   </div>
 
@@ -221,7 +222,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                       {title}
                     </h3>
                     <p className="text-xs text-white/80 mt-1">
-                      Diffusion prévue à <span className="font-bold text-white">{timeStr}</span> (Cameroun)
+                      {tr("Diffusion prévue à", "Airing at")} <span className="font-bold text-white">{timeStr}</span> {tr("(Cameroun)", "(Cameroon)")}
                     </p>
                   </div>
                 </div>
@@ -237,14 +238,14 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
           <div className="flex items-center gap-2">
             <Flame className="w-5 h-5 text-amber-500" />
             <h2 className="font-['Bricolage_Grotesque'] text-xl sm:text-2xl font-bold text-[#14213D] dark:text-[#EEF1F8]">
-              Tendances de la semaine
+              {tr("Tendances de la semaine", "Trending this week")}
             </h2>
           </div>
           <button
             onClick={() => onNavigate('/recherche?tri=TRENDING_DESC')}
             className="text-xs sm:text-sm font-semibold text-[#2B50FF] dark:text-[#7F95FF] hover:underline flex items-center gap-1"
           >
-            <span>Explorer plus</span>
+            <span>{tr("Explorer plus", "Explore more")}</span>
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
@@ -270,14 +271,14 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
           <div className="flex items-center gap-2">
             <Calendar className="w-5 h-5 text-[#2B50FF] dark:text-[#7F95FF]" />
             <h2 className="font-['Bricolage_Grotesque'] text-xl sm:text-2xl font-bold text-[#14213D] dark:text-[#EEF1F8]">
-              Saison {saisonCourante.label} {saisonCourante.annee}
+              {tr('Saison', 'Season')} {saisonCourante.label} {saisonCourante.annee}
             </h2>
           </div>
           <button
             onClick={() => onNavigate(`/saison/${saisonCourante.annee}/${saisonCourante.slug}`)}
             className="text-xs sm:text-sm font-semibold text-[#2B50FF] dark:text-[#7F95FF] hover:underline flex items-center gap-1"
           >
-            <span>Voir toute la saison</span>
+            <span>{tr("Voir toute la saison", "See the whole season")}</span>
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
@@ -303,13 +304,13 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
           <div className="space-y-1">
             <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/10 text-xs font-semibold text-[#FFC83D]">
               <Bot className="w-3.5 h-3.5" />
-              <span>Bot & Communauté Otaku Buea</span>
+              <span>{tr("Bot & Communauté Otaku Buea", "Bot & Buea Otaku Community")}</span>
             </div>
             <h2 className="font-['Bricolage_Grotesque'] text-2xl font-bold">
-              Active le Bot Telegram @animealert_buea_bot
+              {tr("Active le Bot Telegram @animealert_buea_bot", "Activate the Telegram Bot @animealert_buea_bot")}
             </h2>
             <p className="text-sm text-white/80 max-w-xl">
-              Reçois des alertes 15 minutes avant la sortie des épisodes en heure du Cameroun et rejoins nos canaux d'échange.
+              {tr("Reçois des alertes 15 minutes avant la sortie des épisodes en heure du Cameroun et rejoins nos canaux d'échange.", "Get alerts 15 minutes before episodes air, in Cameroon time, and join our discussion channels.")}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2.5">
@@ -320,13 +321,13 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
               className="px-5 py-2.5 rounded-xl bg-[#FFC83D] text-[#14213D] font-bold text-sm hover:brightness-105 active:scale-95 transition-all whitespace-nowrap shadow-md inline-flex items-center gap-2"
             >
               <Bot className="w-4 h-4 text-[#14213D]" />
-              <span>Démarrer le Bot (@animealert_buea_bot)</span>
+              <span>{tr("Démarrer le Bot (@animealert_buea_bot)", "Start the Bot (@animealert_buea_bot)")}</span>
             </a>
             <button
               onClick={() => onNavigate('/canaux')}
               className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-sm transition-all whitespace-nowrap"
             >
-              Voir les canaux
+              {tr("Voir les canaux", "See the channels")}
             </button>
           </div>
         </div>
@@ -334,4 +335,4 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
     </div>
   );
 };
-  
+            
