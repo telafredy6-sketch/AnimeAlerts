@@ -1,3 +1,4 @@
+import { tr } from '../lib/i18n';
 import React from 'react';
 import { Send, Heart, ExternalLink } from 'lucide-react';
 import { CONFIG } from '../lib/config';
@@ -19,10 +20,10 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
             </span>
           </div>
           <p className="max-w-md text-xs leading-relaxed">
-            Plateforme communautaire pour les passionnés d'animation japonaise à Buea et au Cameroun. Suivi des sorties en heure locale (Africa/Douala), comparaison des notes officielles et alertes en direct sur Telegram.
+            {tr("Plateforme communautaire pour les passionnés d'animation japonaise à Buea et au Cameroun. Suivi des sorties en heure locale (Africa/Douala), comparaison des notes officielles et alertes en direct sur Telegram.", "Community platform for Japanese animation fans in Buea and Cameroon. Release tracking in local time (Africa/Douala), official rating comparison and live alerts on Telegram.")}
           </p>
           <p className="text-[11px] text-[#55607A]/80 dark:text-[#A3AEC8]/80">
-            AnimeAlert Buea ne diffuse et n'héberge aucune vidéo protégée par le droit d'auteur. Données fournies par AniList GraphQL, Jikan API (MyAnimeList) et OMDb.
+            {tr("AnimeAlert Buea ne diffuse et n'héberge aucune vidéo protégée par le droit d'auteur. Données fournies par AniList GraphQL, Jikan API (MyAnimeList) et OMDb.", "AnimeAlert Buea does not broadcast or host any copyrighted video. Data provided by AniList GraphQL, Jikan API (MyAnimeList) and OMDb.")}
           </p>
         </div>
 
@@ -34,27 +35,27 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           <ul className="space-y-1.5 text-xs">
             <li>
               <button onClick={() => onNavigate('/')} className="hover:text-[#2B50FF] dark:hover:text-[#7F95FF] transition-colors">
-                Accueil & Sorties du jour
+                {tr("Accueil & Sorties du jour", "Home & Today's releases")}
               </button>
             </li>
             <li>
               <button onClick={() => onNavigate('/recherche')} className="hover:text-[#2B50FF] dark:hover:text-[#7F95FF] transition-colors">
-                Recherche avancée & Filtres
+                {tr("Recherche avancée & Filtres", "Advanced search & Filters")}
               </button>
             </li>
             <li>
               <button onClick={() => onNavigate('/calendrier')} className="hover:text-[#2B50FF] dark:hover:text-[#7F95FF] transition-colors">
-                Calendrier hebdo 7 jours
+                {tr("Calendrier hebdo 7 jours", "7-day weekly calendar")}
               </button>
             </li>
             <li>
               <button onClick={() => onNavigate('/favoris')} className="hover:text-[#2B50FF] dark:hover:text-[#7F95FF] transition-colors">
-                Mes favoris & progression
+                {tr("Mes favoris & progression", "My favorites & progress")}
               </button>
             </li>
             <li>
               <button onClick={() => onNavigate('/a-propos')} className="hover:text-[#2B50FF] dark:hover:text-[#7F95FF] transition-colors">
-                À propos & sources
+                {tr("À propos & sources", "About & sources")}
               </button>
             </li>
           </ul>
@@ -63,7 +64,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
         {/* Col 3: Canaux & Telegram */}
         <div className="space-y-2">
           <h4 className="text-xs font-bold uppercase tracking-wider text-[#14213D] dark:text-[#EEF1F8]">
-            Communauté
+            {tr("Communauté", "Community")}
           </h4>
           <ul className="space-y-2 text-xs">
             <li>
@@ -74,7 +75,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
                 className="inline-flex items-center gap-1.5 font-semibold text-[#2B50FF] dark:text-[#7F95FF] hover:underline"
               >
                 <span className="w-2 h-2 rounded-full bg-[#FFC83D]"></span>
-                <span>Bot Telegram @animealert_buea_bot</span>
+                <span>{tr("Bot Telegram @animealert_buea_bot", "Telegram Bot @animealert_buea_bot")}</span>
                 <ExternalLink className="w-2.5 h-2.5 opacity-70" />
               </a>
             </li>
@@ -86,18 +87,18 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
                 className="inline-flex items-center gap-1 hover:text-[#2B50FF] dark:hover:text-[#7F95FF] transition-colors"
               >
                 <Send className="w-3 h-3 text-[#2B50FF]" />
-                <span>Canal AnimeAlert Buea</span>
+                <span>{tr("Canal AnimeAlert Buea", "AnimeAlert Buea Channel")}</span>
                 <ExternalLink className="w-2.5 h-2.5 opacity-60" />
               </a>
             </li>
             <li>
               <button onClick={() => onNavigate('/canaux')} className="hover:text-[#2B50FF] dark:hover:text-[#7F95FF] transition-colors">
-                Voir tous nos 6 canaux
+                {tr("Voir tous nos 6 canaux", "See all 6 of our channels")}
               </button>
             </li>
             <li>
               <button onClick={() => onNavigate('/canaux?proposer=1')} className="hover:text-[#2B50FF] dark:hover:text-[#7F95FF] transition-colors text-[#2B50FF] dark:text-[#7F95FF] font-medium">
-                + Proposer un canal
+                {tr("+ Proposer un canal", "+ Suggest a channel")}
               </button>
             </li>
           </ul>
@@ -105,14 +106,14 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
       </div>
 
       <div className="w-[min(1180px,100%-2rem)] mx-auto mt-8 pt-6 border-t border-[#D5DBE8]/60 dark:border-[#27324D]/60 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-        <p>© {new Date().getFullYear()} AnimeAlert Buea — Fait avec passion pour la communauté camerounaise.</p>
+        <p>© {new Date().getFullYear()} AnimeAlert Buea — {tr('Fait avec passion pour la communauté camerounaise.', 'Made with passion for the Cameroonian community.')}</p>
         <div className="flex items-center gap-4">
-          <button onClick={() => onNavigate('/a-propos')} className="hover:underline">Mentions légales</button>
+          <button onClick={() => onNavigate('/a-propos')} className="hover:underline">{tr("Mentions légales", "Legal notice")}</button>
           <span>·</span>
-          <button onClick={() => onNavigate('/canaux')} className="hover:underline">Canaux Telegram</button>
+          <button onClick={() => onNavigate('/canaux')} className="hover:underline">{tr("Canaux Telegram", "Telegram Channels")}</button>
         </div>
       </div>
     </footer>
   );
 };
-            
+        
