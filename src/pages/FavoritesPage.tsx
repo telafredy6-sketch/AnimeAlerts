@@ -1,3 +1,4 @@
+import { tr } from '../lib/i18n';
 import React, { useState, useEffect, useRef } from 'react';
 import {
   Heart,
@@ -67,7 +68,7 @@ export const FavoritesPage: React.FC<FavoritesPageProps> = ({ onNavigate }) => {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    setMessageFeedback('Fichier JSON de sauvegarde exporté avec succès !');
+    setMessageFeedback(tr('Fichier JSON de sauvegarde exporté avec succès !', 'Backup JSON file exported successfully!'));
     setTimeout(() => setMessageFeedback(null), 3000);
   };
 
@@ -82,9 +83,9 @@ export const FavoritesPage: React.FC<FavoritesPageProps> = ({ onNavigate }) => {
         const ok = importerFavorisJSON(content);
         if (ok) {
           setFavoris(lireFavoris());
-          setMessageFeedback('Favoris et progression importés avec succès !');
+          setMessageFeedback(tr('Favoris et progression importés avec succès !', 'Favorites and progress imported successfully!'));
         } else {
-          setMessageFeedback("Erreur lors de l'import : format de fichier non reconnu.");
+          setMessageFeedback(tr("Erreur lors de l'import : format de fichier non reconnu.", "Import error: unrecognized file format."));
         }
         setTimeout(() => setMessageFeedback(null), 3500);
       }
@@ -121,11 +122,11 @@ export const FavoritesPage: React.FC<FavoritesPageProps> = ({ onNavigate }) => {
           <div className="flex items-center gap-2">
             <Heart className="w-6 h-6 text-rose-500 fill-rose-500" />
             <h1 className="font-['Bricolage_Grotesque'] text-2xl sm:text-3xl font-extrabold text-[#14213D] dark:text-[#EEF1F8]">
-              Mes Animes Favoris
+              {tr("Mes Animes Favoris", "My Favorite Anime")}
             </h1>
           </div>
           <p className="text-xs sm:text-sm text-[#55607A] dark:text-[#A3AEC8] mt-1">
-            Persisté dans ton navigateur · Aucun compte ni inscription requis.
+            {tr("Persisté dans ton navigateur · Aucun compte ni inscription requis.", "Saved in your browser · No account or sign-up required.")}
           </p>
         </div>
 
@@ -141,19 +142,19 @@ export const FavoritesPage: React.FC<FavoritesPageProps> = ({ onNavigate }) => {
           <button
             onClick={() => fileInputRef.current?.click()}
             className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-xl border border-[#D5DBE8] dark:border-[#27324D] bg-[#FFFFFF] dark:bg-[#161F35] text-[#14213D] dark:text-[#EEF1F8] hover:border-[#2B50FF] transition-colors"
-            title="Importer un fichier JSON de favoris"
+            title={tr("Importer un fichier JSON de favoris", "Import a JSON favorites file")}
           >
             <Upload className="w-3.5 h-3.5" />
-            <span>Importer</span>
+            <span>{tr("Importer", "Import")}</span>
           </button>
           <button
             onClick={handleExporter}
             disabled={totalAnimes === 0}
             className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-xl border border-[#D5DBE8] dark:border-[#27324D] bg-[#FFFFFF] dark:bg-[#161F35] text-[#14213D] dark:text-[#EEF1F8] disabled:opacity-40 hover:border-[#2B50FF] transition-colors"
-            title="Exporter tes favoris pour changer de téléphone ou navigateur"
+            title={tr("Exporter tes favoris pour changer de téléphone ou navigateur", "Export your favorites to switch phone or browser")}
           >
             <Download className="w-3.5 h-3.5" />
-            <span>Exporter</span>
+            <span>{tr("Exporter", "Export")}</span>
           </button>
         </div>
       </div>
@@ -169,25 +170,25 @@ export const FavoritesPage: React.FC<FavoritesPageProps> = ({ onNavigate }) => {
       {totalAnimes > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 rounded-3xl bg-[#FFFFFF] dark:bg-[#161F35] border border-[#D5DBE8] dark:border-[#27324D] shadow-sm">
           <div>
-            <span className="text-[11px] text-[#55607A] dark:text-[#A3AEC8] block">Animes suivis</span>
+            <span className="text-[11px] text-[#55607A] dark:text-[#A3AEC8] block">{tr("Animes suivis", "Anime followed")}</span>
             <span className="font-['Bricolage_Grotesque'] text-2xl font-extrabold text-[#14213D] dark:text-[#EEF1F8] tabular-nums">
               {totalAnimes}
             </span>
           </div>
           <div>
-            <span className="text-[11px] text-[#55607A] dark:text-[#A3AEC8] block">Épisodes vus</span>
+            <span className="text-[11px] text-[#55607A] dark:text-[#A3AEC8] block">{tr("Épisodes vus", "Episodes watched")}</span>
             <span className="font-['Bricolage_Grotesque'] text-2xl font-extrabold text-[#2B50FF] dark:text-[#7F95FF] tabular-nums">
               {totalVus}
             </span>
           </div>
           <div>
-            <span className="text-[11px] text-[#55607A] dark:text-[#A3AEC8] block">Épisodes restants</span>
+            <span className="text-[11px] text-[#55607A] dark:text-[#A3AEC8] block">{tr("Épisodes restants", "Episodes remaining")}</span>
             <span className="font-['Bricolage_Grotesque'] text-2xl font-extrabold text-amber-500 tabular-nums">
               {totalEpisodesAttendus > totalVus ? totalEpisodesAttendus - totalVus : 0}
             </span>
           </div>
           <div>
-            <span className="text-[11px] text-[#55607A] dark:text-[#A3AEC8] block">Séries complétées</span>
+            <span className="text-[11px] text-[#55607A] dark:text-[#A3AEC8] block">{tr("Séries complétées", "Completed series")}</span>
             <span className="font-['Bricolage_Grotesque'] text-2xl font-extrabold text-emerald-600 dark:text-emerald-400 tabular-nums">
               {animesCompletes}
             </span>
@@ -204,14 +205,14 @@ export const FavoritesPage: React.FC<FavoritesPageProps> = ({ onNavigate }) => {
               type="text"
               value={rechercheLocale}
               onChange={(e) => setRechercheLocale(e.target.value)}
-              placeholder="Filtrer dans mes favoris..."
+              placeholder={tr("Filtrer dans mes favoris...", "Filter my favorites...")}
               className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-[#D5DBE8] dark:border-[#27324D] bg-[#FFFFFF] dark:bg-[#161F35] text-[#14213D] dark:text-[#EEF1F8] outline-none focus:border-[#2B50FF]"
             />
           </div>
 
           <div className="flex items-center gap-1.5 text-xs text-[#55607A] dark:text-[#A3AEC8]">
             <ArrowUpDown className="w-3.5 h-3.5" />
-            <span>Trier :</span>
+            <span>{tr("Trier :", "Sort:")}</span>
             <div className="flex items-center p-1 rounded-xl bg-[#FFFFFF] dark:bg-[#161F35] border border-[#D5DBE8] dark:border-[#27324D]">
               <button
                 onClick={() => setTri('date')}
@@ -219,7 +220,7 @@ export const FavoritesPage: React.FC<FavoritesPageProps> = ({ onNavigate }) => {
                   tri === 'date' ? 'bg-[#2B50FF] text-white' : 'hover:text-[#14213D] dark:hover:text-[#EEF1F8]'
                 }`}
               >
-                Récents
+                {tr("Récents", "Recent")}
               </button>
               <button
                 onClick={() => setTri('note')}
@@ -227,7 +228,7 @@ export const FavoritesPage: React.FC<FavoritesPageProps> = ({ onNavigate }) => {
                   tri === 'note' ? 'bg-[#2B50FF] text-white' : 'hover:text-[#14213D] dark:hover:text-[#EEF1F8]'
                 }`}
               >
-                Notes
+                {tr("Notes", "Ratings")}
               </button>
               <button
                 onClick={() => setTri('titre')}
@@ -235,7 +236,7 @@ export const FavoritesPage: React.FC<FavoritesPageProps> = ({ onNavigate }) => {
                   tri === 'titre' ? 'bg-[#2B50FF] text-white' : 'hover:text-[#14213D] dark:hover:text-[#EEF1F8]'
                 }`}
               >
-                Titre
+                {tr("Titre", "Title")}
               </button>
             </div>
           </div>
@@ -250,23 +251,23 @@ export const FavoritesPage: React.FC<FavoritesPageProps> = ({ onNavigate }) => {
           </div>
           <div className="space-y-1">
             <h3 className="font-['Bricolage_Grotesque'] text-lg font-bold text-[#14213D] dark:text-[#EEF1F8]">
-              Ta liste de favoris est vide pour le moment
+              {tr("Ta liste de favoris est vide pour le moment", "Your favorites list is empty for now")}
             </h3>
             <p className="text-xs text-[#55607A] dark:text-[#A3AEC8] max-w-sm mx-auto">
-              Clique sur le cœur ♡ sur n'importe quelle carte d'anime pour l'ajouter ici et suivre ta progression d'épisodes.
+              {tr("Clique sur le cœur ♡ sur n'importe quelle carte d'anime pour l'ajouter ici et suivre ta progression d'épisodes.", "Tap the heart ♡ on any anime card to add it here and track your episode progress.")}
             </p>
           </div>
           <button
             onClick={() => onNavigate('/recherche')}
             className="px-5 py-2.5 text-xs font-semibold rounded-xl bg-[#2B50FF] text-white hover:brightness-105 transition-all shadow-md"
           >
-            Découvrir des animes
+            {tr("Découvrir des animes", "Discover anime")}
           </button>
         </div>
       ) : favorisFiltres.length === 0 ? (
         <div className="p-8 text-center rounded-2xl border border-dashed border-[#D5DBE8] dark:border-[#27324D]">
           <p className="text-sm font-semibold text-[#14213D] dark:text-[#EEF1F8]">
-            Aucun favori ne correspond à « {rechercheLocale} »
+            {tr('Aucun favori ne correspond à', 'No favorite matches')} « {rechercheLocale} »
           </p>
         </div>
       ) : (
@@ -296,7 +297,7 @@ export const FavoritesPage: React.FC<FavoritesPageProps> = ({ onNavigate }) => {
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-xs text-slate-400">
-                        Affiche
+                        {tr("Affiche", "Poster")}
                       </div>
                     )}
                   </div>
@@ -309,7 +310,7 @@ export const FavoritesPage: React.FC<FavoritesPageProps> = ({ onNavigate }) => {
                       <button
                         onClick={(e) => handleSupprimer(e, item.id)}
                         className="p-1 text-[#55607A] hover:text-rose-500 transition-colors"
-                        title="Supprimer des favoris"
+                        title={tr("Supprimer des favoris", "Remove from favorites")}
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -332,9 +333,9 @@ export const FavoritesPage: React.FC<FavoritesPageProps> = ({ onNavigate }) => {
                   <div className="space-y-0.5">
                     <span className="text-[11px] font-medium text-[#55607A] dark:text-[#A3AEC8]">
                       {isCompleted ? (
-                        <span className="text-emerald-600 font-bold">Complété !</span>
+                        <span className="text-emerald-600 font-bold">{tr("Complété !", "Completed!")}</span>
                       ) : (
-                        <>Épisode <strong className="text-[#14213D] dark:text-[#EEF1F8] tabular-nums">{vus}</strong> {total ? `/ ${total}` : ''}</>
+                        <>{tr("Épisode", "Episode")} <strong className="text-[#14213D] dark:text-[#EEF1F8] tabular-nums">{vus}</strong> {total ? `/ ${total}` : ''}</>
                       )}
                     </span>
                   </div>
@@ -344,7 +345,7 @@ export const FavoritesPage: React.FC<FavoritesPageProps> = ({ onNavigate }) => {
                       onClick={(e) => handleUpdateEpisode(e, item, -1)}
                       disabled={vus <= 0}
                       className="p-1 rounded-lg border border-[#D5DBE8] dark:border-[#27324D] bg-[#F2F4F8] dark:bg-[#0D1322] disabled:opacity-30 hover:border-[#2B50FF]"
-                      title="-1 épisode"
+                      title={tr("-1 épisode", "-1 episode")}
                     >
                       <Minus className="w-3 h-3" />
                     </button>
@@ -352,7 +353,7 @@ export const FavoritesPage: React.FC<FavoritesPageProps> = ({ onNavigate }) => {
                       onClick={(e) => handleUpdateEpisode(e, item, 1)}
                       disabled={total ? vus >= total : false}
                       className="p-1 rounded-lg border border-[#D5DBE8] dark:border-[#27324D] bg-[#F2F4F8] dark:bg-[#0D1322] disabled:opacity-30 hover:border-[#2B50FF]"
-                      title="+1 épisode"
+                      title={tr("+1 épisode", "+1 episode")}
                     >
                       <Plus className="w-3 h-3" />
                     </button>
