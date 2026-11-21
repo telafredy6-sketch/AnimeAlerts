@@ -1,3 +1,4 @@
+import { tr } from '../lib/i18n';
 import React, { useState } from 'react';
 import { Send, CheckCircle2, PlusCircle, ExternalLink, ShieldCheck, Users, Sparkles, Bot } from 'lucide-react';
 import { CONFIG } from '../lib/config';
@@ -22,12 +23,12 @@ export const ChannelsPage: React.FC<ChannelsPageProps> = ({ onNavigate }) => {
   const bot = lienBot();
 
   const categories = [
-    { id: 'tous', label: 'Tous les canaux' },
-    { id: 'officiel', label: 'Officiel' },
-    { id: 'sorties', label: 'Sorties & Alertes' },
+    { id: 'tous', label: tr('Tous les canaux', 'All channels') },
+    { id: 'officiel', label: tr('Officiel', 'Official') },
+    { id: 'sorties', label: tr('Sorties & Alertes', 'Releases & Alerts') },
     { id: 'streaming', label: 'Streaming' },
-    { id: 'mangas', label: 'Mangas & Scans' },
-    { id: 'communaute', label: 'Communauté' }
+    { id: 'mangas', label: tr('Mangas & Scans', 'Manga & Scans') },
+    { id: 'communaute', label: tr('Communauté', 'Community') }
   ];
 
   const filteredCanaux = CONFIG.canaux.filter((c) => {
@@ -58,11 +59,11 @@ export const ChannelsPage: React.FC<ChannelsPageProps> = ({ onNavigate }) => {
           <div className="flex items-center gap-2">
             <Send className="w-6 h-6 text-[#2B50FF] dark:text-[#7F95FF]" />
             <h1 className="font-['Bricolage_Grotesque'] text-2xl sm:text-3xl font-extrabold text-[#14213D] dark:text-[#EEF1F8]">
-              Nos Canaux Telegram à Buea
+              {tr("Nos Canaux Telegram à Buea", "Our Telegram Channels in Buea")}
             </h1>
           </div>
           <p className="text-xs sm:text-sm text-[#55607A] dark:text-[#A3AEC8] mt-1">
-            Rejoins les canaux anime les plus actifs du Cameroun. Alertes de sortie instantanées, épisodes en direct et mangas.
+            {tr("Rejoins les canaux anime les plus actifs du Cameroun. Alertes de sortie instantanées, épisodes en direct et mangas.", "Join the most active anime channels in Cameroon. Instant release alerts, live episodes and manga.")}
           </p>
         </div>
 
@@ -71,7 +72,7 @@ export const ChannelsPage: React.FC<ChannelsPageProps> = ({ onNavigate }) => {
           className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[#D5DBE8] dark:border-[#27324D] bg-[#FFFFFF] dark:bg-[#161F35] text-xs font-semibold text-[#14213D] dark:text-[#EEF1F8] hover:border-[#2B50FF] hover:text-[#2B50FF] transition-all shrink-0"
         >
           <PlusCircle className="w-4 h-4 text-[#2B50FF]" />
-          <span>Proposer un canal</span>
+          <span>{tr("Proposer un canal", "Suggest a channel")}</span>
         </button>
       </div>
 
@@ -81,13 +82,13 @@ export const ChannelsPage: React.FC<ChannelsPageProps> = ({ onNavigate }) => {
           <div className="space-y-2 max-w-xl">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-xs font-bold text-[#FFC83D]">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Bot Telegram Officiel</span>
+              <span>{tr("Bot Telegram Officiel", "Official Telegram Bot")}</span>
             </div>
             <h2 className="font-['Bricolage_Grotesque'] text-2xl font-bold">
-              Le Bot AnimeAlert Buea
+              {tr("Le Bot AnimeAlert Buea", "The AnimeAlert Buea Bot")}
             </h2>
             <p className="text-xs sm:text-sm text-white/80 leading-relaxed">
-              Ajoute tes séries en favoris directement dans Telegram et reçois un message privé 15 minutes avant la sortie de chaque épisode en heure du Cameroun.
+              {tr("Ajoute tes séries en favoris directement dans Telegram et reçois un message privé 15 minutes avant la sortie de chaque épisode en heure du Cameroun.", "Add your series to your favorites directly in Telegram and get a private message 15 minutes before each episode airs, in Cameroon time.")}
             </p>
           </div>
           <a
@@ -97,7 +98,7 @@ export const ChannelsPage: React.FC<ChannelsPageProps> = ({ onNavigate }) => {
             className="px-6 py-3 rounded-2xl bg-[#FFC83D] text-[#14213D] font-bold text-sm hover:brightness-105 active:scale-95 transition-all shadow-md whitespace-nowrap flex items-center gap-2"
           >
             <Bot className="w-4 h-4 text-[#14213D]" />
-            <span>Démarrer le Bot (@animealert_buea_bot)</span>
+            <span>{tr("Démarrer le Bot (@animealert_buea_bot)", "Start the Bot (@animealert_buea_bot)")}</span>
           </a>
         </section>
       )}
@@ -139,7 +140,7 @@ export const ChannelsPage: React.FC<ChannelsPageProps> = ({ onNavigate }) => {
                 {canal.membres && (
                   <span className="text-[11px] font-medium text-[#55607A] dark:text-[#A3AEC8] flex items-center gap-1">
                     <Users className="w-3 h-3" />
-                    <span>{canal.membres} membres</span>
+                    <span>{canal.membres} {tr('membres', 'members')}</span>
                   </span>
                 )}
               </div>
@@ -159,7 +160,7 @@ export const ChannelsPage: React.FC<ChannelsPageProps> = ({ onNavigate }) => {
               rel="noopener noreferrer"
               className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-[#2B50FF] text-white text-xs font-semibold hover:brightness-105 active:scale-95 transition-all shadow-sm"
             >
-              <span>Rejoindre le canal</span>
+              <span>{tr("Rejoindre le canal", "Join the channel")}</span>
               <ExternalLink className="w-3.5 h-3.5 opacity-80" />
             </a>
           </article>
@@ -171,72 +172,72 @@ export const ChannelsPage: React.FC<ChannelsPageProps> = ({ onNavigate }) => {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="w-full max-w-md rounded-3xl bg-[#FFFFFF] dark:bg-[#161F35] border border-[#D5DBE8] dark:border-[#27324D] p-6 shadow-2xl space-y-4">
             <h3 className="font-['Bricolage_Grotesque'] text-lg font-bold text-[#14213D] dark:text-[#EEF1F8]">
-              Proposer un canal Telegram
+              {tr("Proposer un canal Telegram", "Suggest a Telegram channel")}
             </h3>
             <p className="text-xs text-[#55607A] dark:text-[#A3AEC8]">
-              Tu gères ou connais un bon canal anime/manga à Buea ou au Cameroun ? Soumets-le pour vérification par l'équipe AnimeAlert.
+              {tr("Tu gères ou connais un bon canal anime/manga à Buea ou au Cameroun ? Soumets-le pour vérification par l'équipe AnimeAlert.", "Do you run or know a good anime/manga channel in Buea or Cameroon? Submit it for review by the AnimeAlert team.")}
             </p>
 
             {formSucces ? (
               <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 text-xs font-semibold flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 shrink-0" />
-                <span>Merci ! Ta proposition a été transmise avec succès à l'équipe.</span>
+                <span>{tr("Merci ! Ta proposition a été transmise avec succès à l'équipe.", "Thank you! Your suggestion has been successfully sent to the team.")}</span>
               </div>
             ) : (
               <form onSubmit={handleSubmitProposition} className="space-y-3">
                 <div>
                   <label className="block text-xs font-semibold text-[#14213D] dark:text-[#EEF1F8] mb-1">
-                    Nom du canal Telegram *
+                    {tr("Nom du canal Telegram *", "Telegram channel name *")}
                   </label>
                   <input
                     type="text"
                     required
                     value={propNom}
                     onChange={(e) => setPropNom(e.target.value)}
-                    placeholder="Ex. Anime Douala Zone"
+                    placeholder={tr("Ex. Anime Douala Zone", "E.g. Anime Douala Zone")}
                     className="w-full p-2.5 text-xs rounded-xl border border-[#D5DBE8] dark:border-[#27324D] bg-[#F2F4F8] dark:bg-[#0D1322] text-[#14213D] dark:text-[#EEF1F8] outline-none focus:border-[#2B50FF]"
                   />
                 </div>
 
                 <div>
                   <label className="block text-xs font-semibold text-[#14213D] dark:text-[#EEF1F8] mb-1">
-                    Lien du canal (t.me/...) *
+                    {tr("Lien du canal (t.me/...) *", "Channel link (t.me/...) *")}
                   </label>
                   <input
                     type="url"
                     required
                     value={propLien}
                     onChange={(e) => setPropLien(e.target.value)}
-                    placeholder="https://t.me/nom_du_canal"
+                    placeholder={tr("https://t.me/nom_du_canal", "https://t.me/channel_name")}
                     className="w-full p-2.5 text-xs rounded-xl border border-[#D5DBE8] dark:border-[#27324D] bg-[#F2F4F8] dark:bg-[#0D1322] text-[#14213D] dark:text-[#EEF1F8] outline-none focus:border-[#2B50FF]"
                   />
                 </div>
 
                 <div>
                   <label className="block text-xs font-semibold text-[#14213D] dark:text-[#EEF1F8] mb-1">
-                    Catégorie
+                    {tr("Catégorie", "Category")}
                   </label>
                   <select
                     value={propCat}
                     onChange={(e) => setPropCat(e.target.value)}
                     className="w-full p-2.5 text-xs rounded-xl border border-[#D5DBE8] dark:border-[#27324D] bg-[#F2F4F8] dark:bg-[#0D1322] text-[#14213D] dark:text-[#EEF1F8] outline-none"
                   >
-                    <option value="streaming">Streaming & Épisodes</option>
-                    <option value="sorties">Sorties & Alertes</option>
-                    <option value="mangas">Mangas & Scans</option>
-                    <option value="communaute">Communauté & Débats</option>
+                    <option value="streaming">{tr("Streaming & Épisodes", "Streaming & Episodes")}</option>
+                    <option value="sorties">{tr("Sorties & Alertes", "Releases & Alerts")}</option>
+                    <option value="mangas">{tr("Mangas & Scans", "Manga & Scans")}</option>
+                    <option value="communaute">{tr("Communauté & Débats", "Community & Discussions")}</option>
                   </select>
                 </div>
 
                 <div>
                   <label className="block text-xs font-semibold text-[#14213D] dark:text-[#EEF1F8] mb-1">
-                    Courte description
+                    {tr("Courte description", "Short description")}
                   </label>
                   <textarea
                     rows={2}
                     value={propDesc}
                     onChange={(e) => setPropDesc(e.target.value)}
-                    placeholder="Ce que les utilisateurs y trouveront..."
+                    placeholder={tr("Ce que les utilisateurs y trouveront...", "What users will find there...")}
                     className="w-full p-2.5 text-xs rounded-xl border border-[#D5DBE8] dark:border-[#27324D] bg-[#F2F4F8] dark:bg-[#0D1322] text-[#14213D] dark:text-[#EEF1F8] outline-none focus:border-[#2B50FF]"
                   />
                 </div>
@@ -247,13 +248,13 @@ export const ChannelsPage: React.FC<ChannelsPageProps> = ({ onNavigate }) => {
                     onClick={() => setShowProposerModal(false)}
                     className="px-4 py-2 text-xs font-semibold rounded-xl border border-[#D5DBE8] dark:border-[#27324D] hover:bg-black/5 dark:hover:bg-white/5"
                   >
-                    Annuler
+                    {tr("Annuler", "Cancel")}
                   </button>
                   <button
                     type="submit"
                     className="px-4 py-2 text-xs font-semibold rounded-xl bg-[#2B50FF] text-white hover:brightness-105"
                   >
-                    Envoyer la proposition
+                    {tr("Envoyer la proposition", "Send suggestion")}
                   </button>
                 </div>
               </form>
@@ -264,4 +265,4 @@ export const ChannelsPage: React.FC<ChannelsPageProps> = ({ onNavigate }) => {
     </div>
   );
 };
-  
+    
