@@ -1,4 +1,4 @@
-const CACHE_NAME = 'animealert-v3';
+const CACHE_NAME = 'animealert-v4';
 const IMAGE_CACHE_NAME = 'animealert-images-v1';
 const NOTIF_STATE_CACHE = 'animealert-notif-state';
 const NOTIF_STATE_KEY = '/__animealert_notif_state__';
@@ -50,11 +50,13 @@ self.addEventListener('fetch', (event) => {
   // Ignore internal virtual cache key
   if (url.pathname === NOTIF_STATE_KEY) return;
 
-  // External JSON APIs (GraphQL AniList, Jikan, OMDb): Network First with cache fallback
+  // Local /api/* and External JSON APIs (AniList, Jikan, OMDb, Wikidata): Network First with cache fallback
   if (
+    url.pathname.startsWith('/api/') ||
     url.hostname === 'graphql.anilist.co' ||
     url.hostname.includes('jikan.moe') ||
-    url.hostname.includes('omdbapi.com')
+    url.hostname.includes('omdbapi.com') ||
+    url.hostname.includes('wikidata.org')
   ) {
     event.respondWith(
       fetch(event.request)

@@ -4,9 +4,6 @@ import {
   Star,
   Heart,
   Share2,
-  Calendar,
-  Clock,
-  Tv,
   CheckCircle2,
   Plus,
   Minus,
@@ -14,10 +11,15 @@ import {
   Play,
   ExternalLink,
   ChevronLeft,
-  Send,
   Building2,
   Users,
-  Bot
+  Bot,
+  Trophy,
+  Award,
+  Music,
+  GitBranch,
+  Film,
+  Tv
 } from 'lucide-react';
 import { anilist, QUERY_FICHE_COMPLETE } from '../lib/anilist';
 import { AnimeMedia } from '../lib/types';
@@ -37,7 +39,15 @@ import {
   lireProgression,
   sauvegarderProgression
 } from '../lib/favoris';
-import { fetchJikanScore, fetchOmdbRating, analyseNotes } from '../lib/notes';
+import {
+  fetchJikanDetails,
+  fetchOmdbDetails,
+  fetchWikidataImdbAndAwards,
+  analyseNotes,
+  JikanDetails,
+  OmdbDetails,
+  WikidataEnrichment
+} from '../lib/notes';
 import { isAnimeSubscribed, toggleAnimeSubscription } from '../lib/notifications';
 
 interface AnimeDetailPageProps {
@@ -50,12 +60,14 @@ export const AnimeDetailPage: React.FC<AnimeDetailPageProps> = ({ id, onNavigate
   const [anime, setAnime] = useState<AnimeMedia | null>(null);
   const [chargement, setChargement] = useState(true);
   const [erreur, setErreur] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // Scores
-  const [malScore, setMalScore] = useState<number | null>(null);
-  const [imdbRating, setImdbRating] = useState<string | null>(null);
-  const [imdbId, setImdbId] = useState<string | undefined>(undefined);
+  // Scores, OMDb, Wikidata & Jikan Full
+  const [jikanDetails, setJikanDetails] = useState<JikanDetails | null>(null);
+  const [omdbDetails, setOmdbDetails] = useState<OmdbDetails | null>(null);
+  const [wikidata, setWikidata] = useState<WikidataEnrichment | null>(null);
   const [notesLoading, setNotesLoading] = useState(false);
+  const [activeThemeTab, setActiveThemeTab] = useState<'op' | 'ed'>('op');
 
   // Progression & Favoris
   const [isFav, setIsFav] = useState(false);
@@ -78,13 +90,16 @@ export const AnimeDetailPage: React.FC<AnimeDetailPageProps> = ({ id, onNavigate
     let ignore = false;
     setChargement(true);
     setErreur(null);
+    setJikanDetails(null);
+    setOmdbDetails(null);
+    setWikidata(null);
 
     anilist(QUERY_FICHE_COMPLETE, { id: animeId })
       .then((data) => {
         if (ignore) return;
         const media: AnimeMedia = data?.Media;
         if (!media) {
-          setErreur("Anime introuvable.");
+          setErreur(tr("Anime introuvable.", "Anime not found."));
           return;
         }
         setAnime(media);
@@ -95,36 +110,37 @@ export const AnimeDetailPage: React.FC<AnimeDetailPageProps> = ({ id, onNavigate
         const prog = lireProgression(animeId);
         setEpisodesVus(prog.episodesVus || 0);
 
-        // Fetch companion notes (MyAnimeList & IMDb)
+        // Fetch companion notes (MyAnimeList, Wikidata IMDb/Awards & OMDb)
         setNotesLoading(true);
-        const promises: Promise<any>[] = [];
-
-        if (media.idMal) {
-          promises.push(
-            fetchJikanScore(media.idMal).then((score) => {
-              if (!ignore) setMalScore(score);
-            })
-          );
-        }
-
         const titles = [media.title?.english, media.title?.romaji].filter(Boolean) as string[];
-        promises.push(
-          fetchOmdbRating(titles).then((r) => {
-            if (!ignore) {
-              setImdbRating(r.rating);
-              setImdbId(r.imdbId);
-            }
-          })
-        );
 
-        Promise.allSettled(promises).finally(() => {
+        const jikanPromise = media.idMal
+          ? fetchJikanDetails(media.idMal).then((details) => {
+              if (!ignore) setJikanDetails(details);
+            })
+          : Promise.resolve();
+
+        const wikidataAndOmdbPromise = fetchWikidataImdbAndAwards(media.id, media.idMal).then(async (wd) => {
+          if (ignore) return;
+          setWikidata(wd);
+
+          const omdb = await fetchOmdbDetails({
+            titles,
+            year: media.seasonYear,
+            format: media.format,
+            imdbId: wd.imdbId
+          });
+          if (!ignore) setOmdbDetails(omdb);
+        });
+
+        Promise.allSettled([jikanPromise, wikidataAndOmdbPromise]).finally(() => {
           if (!ignore) setNotesLoading(false);
         });
       })
       .catch((err) => {
         if (!ignore) {
-          console.error('Erreur chargement anime:', err);
-          setErreur(tr("Impossible de récupérer les détails de cet anime.", "Unable to load the details of this anime."));
+          console.warn('Chargement anime interrompu:', err?.message || err);
+          setErreur(tr("Impossible de récupérer les détails de cet anime pour le moment.", "Unable to load the details of this anime right now."));
         }
       })
       .finally(() => {
@@ -134,7 +150,7 @@ export const AnimeDetailPage: React.FC<AnimeDetailPageProps> = ({ id, onNavigate
     return () => {
       ignore = true;
     };
-  }, [animeId]);
+  }, [animeId, retryCount]);
 
   const handleToggleFav = () => {
     if (!anime) return;
@@ -211,13 +227,21 @@ export const AnimeDetailPage: React.FC<AnimeDetailPageProps> = ({ id, onNavigate
   if (erreur || !anime) {
     return (
       <div className="p-8 text-center space-y-4 rounded-2xl border border-dashed border-[#D5DBE8] dark:border-[#27324D] my-10">
-        <p className="text-base font-bold text-[#14213D] dark:text-[#EEF1F8]">{erreur || "Anime introuvable."}</p>
-        <button
-          onClick={() => onNavigate('/recherche')}
-          className="px-4 py-2 text-xs font-semibold rounded-lg bg-[#2B50FF] text-white hover:brightness-105"
-        >
-          {tr("Retour au catalogue", "Back to catalog")}
-        </button>
+        <p className="text-base font-bold text-[#14213D] dark:text-[#EEF1F8]">{erreur || tr("Anime introuvable.", "Anime not found.")}</p>
+        <div className="flex flex-wrap items-center justify-center gap-2.5">
+          <button
+            onClick={() => setRetryCount((c) => c + 1)}
+            className="px-4 py-2 text-xs font-semibold rounded-xl bg-[#2B50FF] text-white hover:brightness-105 transition-all"
+          >
+            {tr("Réessayer", "Retry")}
+          </button>
+          <button
+            onClick={() => onNavigate('/recherche')}
+            className="px-4 py-2 text-xs font-semibold rounded-xl border border-[#D5DBE8] dark:border-[#27324D] text-[#14213D] dark:text-[#EEF1F8] hover:border-[#2B50FF] transition-all"
+          >
+            {tr("Retour au catalogue", "Back to catalog")}
+          </button>
+        </div>
       </div>
     );
   }
@@ -234,11 +258,21 @@ export const AnimeDetailPage: React.FC<AnimeDetailPageProps> = ({ id, onNavigate
   const nextAir = anime.nextAiringEpisode;
   const secondesRestantes = nextAir ? nextAir.airingAt - maintenant : 0;
 
-  // Comparatif des notes
+  // Comparatif des notes & données OMDb / Jikan / Wikidata
+  const malScore = jikanDetails?.score ?? null;
+  const imdbRating = omdbDetails?.imdbRating ?? null;
+  const resolvedImdbId = omdbDetails?.imdbId || wikidata?.imdbId;
+
   const analyse = analyseNotes(
     anime.averageScore ? anime.averageScore / 10 : null,
     malScore,
-    imdbRating
+    imdbRating,
+    {
+      rankMal: jikanDetails?.rank,
+      winsCount: omdbDetails?.parsedAwards?.wins,
+      oscarsCount: omdbDetails?.parsedAwards?.oscars,
+      rottenTomatoes: omdbDetails?.rottenTomatoes
+    }
   );
 
   const coverUrl = anime.coverImage?.large || anime.coverImage?.extraLarge;
@@ -412,16 +446,16 @@ export const AnimeDetailPage: React.FC<AnimeDetailPageProps> = ({ id, onNavigate
         </div>
       </div>
 
-      {/* Feature Phare : Comparaison Triple Notes (AniList / MyAnimeList / IMDb) */}
+      {/* Feature Phare : Comparaison Triple Notes (AniList / MyAnimeList / IMDb & OMDb) */}
       <section className="p-6 rounded-3xl bg-[#FFFFFF] dark:bg-[#161F35] border border-[#D5DBE8] dark:border-[#27324D] shadow-sm space-y-4">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 className="font-['Bricolage_Grotesque'] text-lg font-bold text-[#14213D] dark:text-[#EEF1F8] flex items-center gap-2">
             <Star className="w-5 h-5 text-[#FFC83D] fill-[#FFC83D]" />
             <span>{tr("Comparatif officiel des notes communautaires", "Official comparison of community ratings")}</span>
           </h2>
           {notesLoading && (
             <span className="text-xs text-[#55607A] dark:text-[#A3AEC8] animate-pulse">
-              {tr("Chargement MyAnimeList & IMDb...", "Loading MyAnimeList & IMDb...")}
+              {tr("Chargement MyAnimeList & OMDb...", "Loading MyAnimeList & OMDb...")}
             </span>
           )}
         </div>
@@ -441,14 +475,23 @@ export const AnimeDetailPage: React.FC<AnimeDetailPageProps> = ({ id, onNavigate
               <span className="text-xs text-[#55607A] dark:text-[#A3AEC8]">/ 10</span>
             </div>
             <p className="text-[11px] text-[#55607A] dark:text-[#A3AEC8] mt-1">
-              {tr("Communauté mondiale AniList", "AniList global community")}
+              {anime.favourites
+                ? `${anime.favourites.toLocaleString(LOCALE)} ${tr('favoris AniList', 'AniList favorites')}`
+                : tr("Communauté mondiale AniList", "AniList global community")}
             </p>
           </div>
 
           {/* MyAnimeList */}
           <div className="p-4 rounded-2xl bg-indigo-50/60 dark:bg-indigo-950/20 border border-indigo-200/60 dark:border-indigo-900/40">
             <div className="flex items-center justify-between text-xs text-[#55607A] dark:text-[#A3AEC8] font-medium">
-              <span>MyAnimeList</span>
+              <span className="flex items-center gap-1.5">
+                <span>MyAnimeList</span>
+                {jikanDetails?.rank && (
+                  <span className="px-1.5 py-0.5 rounded-md bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 text-[10px] font-bold tabular-nums">
+                    #{jikanDetails.rank}
+                  </span>
+                )}
+              </span>
               {anime.idMal && (
                 <a
                   href={`https://myanimelist.net/anime/${anime.idMal}`}
@@ -467,25 +510,27 @@ export const AnimeDetailPage: React.FC<AnimeDetailPageProps> = ({ id, onNavigate
               <span className="text-xs text-[#55607A] dark:text-[#A3AEC8]">/ 10</span>
             </div>
             <p className="text-[11px] text-[#55607A] dark:text-[#A3AEC8] mt-1">
-              {tr("Jikan API v4 vérifiée", "Jikan API v4 verified")}
+              {jikanDetails?.scoredBy
+                ? `${jikanDetails.scoredBy.toLocaleString(LOCALE)} ${tr('votes MAL', 'MAL votes')}`
+                : tr("Jikan API v4 vérifiée", "Jikan API v4 verified")}
             </p>
           </div>
 
-          {/* IMDb */}
+          {/* IMDb via OMDb */}
           <div className="p-4 rounded-2xl bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-900/40">
             <div className="flex items-center justify-between text-xs text-[#55607A] dark:text-[#A3AEC8] font-medium">
-              <span>IMDb</span>
+              <span>IMDb · OMDb</span>
               <a
                 href={
-                  imdbId
-                    ? `https://www.imdb.com/title/${imdbId}/`
+                  resolvedImdbId
+                    ? `https://www.imdb.com/title/${resolvedImdbId}/`
                     : `https://www.imdb.com/find/?q=${encodeURIComponent(titre)}&s=tt`
                 }
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-[11px] text-amber-600 dark:text-amber-400 hover:underline inline-flex items-center gap-0.5"
               >
-                {tr("Fiche", "Page")} <ExternalLink className="w-2.5 h-2.5" />
+                {tr("Fiche IMDb", "IMDb Page")} <ExternalLink className="w-2.5 h-2.5" />
               </a>
             </div>
             <div className="mt-2 flex items-baseline gap-1">
@@ -495,10 +540,46 @@ export const AnimeDetailPage: React.FC<AnimeDetailPageProps> = ({ id, onNavigate
               <span className="text-xs text-[#55607A] dark:text-[#A3AEC8]">/ 10</span>
             </div>
             <p className="text-[11px] text-[#55607A] dark:text-[#A3AEC8] mt-1">
-              {tr("Avis critiques & grand public", "Critic & general audience reviews")}
+              {omdbDetails?.imdbVotes
+                ? `${omdbDetails.imdbVotes} ${tr('votes IMDb', 'IMDb votes')}`
+                : tr("Avis critiques & grand public", "Critic & general audience reviews")}
             </p>
           </div>
         </div>
+
+        {/* Critiques complémentaires OMDb (Rotten Tomatoes, Metascore, Classification, Box Office) */}
+        {(omdbDetails?.rottenTomatoes ||
+          omdbDetails?.metacritic ||
+          omdbDetails?.rated ||
+          jikanDetails?.rating ||
+          omdbDetails?.boxOffice) && (
+          <div className="flex flex-wrap items-center gap-2 pt-1">
+            {omdbDetails?.rottenTomatoes && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs font-semibold text-rose-600 dark:text-rose-400">
+                <span>Rotten Tomatoes</span>
+                <strong className="tabular-nums">{omdbDetails.rottenTomatoes}</strong>
+              </span>
+            )}
+            {omdbDetails?.metacritic && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                <span>Metascore</span>
+                <strong className="tabular-nums">{omdbDetails.metacritic}</strong>
+              </span>
+            )}
+            {(omdbDetails?.rated || jikanDetails?.rating) && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-[#D5DBE8] dark:border-[#27324D] text-xs font-medium text-[#14213D] dark:text-[#EEF1F8]">
+                <span>{tr('Public :', 'Rated:')}</span>
+                <strong>{omdbDetails?.rated || jikanDetails?.rating?.split(' - ')[0]}</strong>
+              </span>
+            )}
+            {omdbDetails?.boxOffice && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs font-semibold text-amber-700 dark:text-amber-300">
+                <Film className="w-3.5 h-3.5" />
+                <span>Box-office : {omdbDetails.boxOffice}</span>
+              </span>
+            )}
+          </div>
+        )}
 
         {/* Analyse comparative */}
         <div className="p-3.5 rounded-xl bg-slate-100/70 dark:bg-slate-800/60 text-xs sm:text-sm text-[#14213D] dark:text-[#EEF1F8] flex items-center gap-2">
@@ -506,6 +587,146 @@ export const AnimeDetailPage: React.FC<AnimeDetailPageProps> = ({ id, onNavigate
           <span className="font-medium">{analyse}</span>
         </div>
       </section>
+
+      {/* Distinctions, Prix & Titres gagnés (OMDb & Wikidata) */}
+      {(omdbDetails?.parsedAwards ||
+        (wikidata && wikidata.awards.length > 0) ||
+        omdbDetails?.director ||
+        omdbDetails?.actors ||
+        omdbDetails?.country) && (
+        <section className="p-6 rounded-3xl bg-[#FFFFFF] dark:bg-[#161F35] border border-[#D5DBE8] dark:border-[#27324D] shadow-sm space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 className="font-['Bricolage_Grotesque'] text-lg font-bold text-[#14213D] dark:text-[#EEF1F8] flex items-center gap-2">
+              <Trophy className="w-5 h-5 text-[#FFC83D]" />
+              <span>{tr("Distinctions, Prix & Fiche IMDb / OMDb", "Awards, Titles Won & IMDb / OMDb Info")}</span>
+            </h2>
+            {resolvedImdbId && (
+              <a
+                href={`https://www.imdb.com/title/${resolvedImdbId}/awards/`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs font-semibold text-[#2B50FF] dark:text-[#7F95FF] hover:underline inline-flex items-center gap-1"
+              >
+                <span>{tr("Palmarès complet sur IMDb", "Full awards on IMDb")}</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+            )}
+          </div>
+
+          {/* Compteurs visuels OMDb (Oscars, Victoires, Nominations) */}
+          {omdbDetails?.parsedAwards && (
+            <div className="space-y-3">
+              <div className="flex flex-wrap gap-2.5">
+                {omdbDetails.parsedAwards.oscars > 0 && (
+                  <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500/20 to-yellow-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-xs font-bold">
+                    <Trophy className="w-4 h-4 text-[#FFC83D]" />
+                    <span>
+                      {omdbDetails.parsedAwards.oscars}{' '}
+                      {omdbDetails.parsedAwards.oscars > 1 ? 'Oscars' : 'Oscar'}{' '}
+                      {tr('remporté', 'won')}
+                      {omdbDetails.parsedAwards.oscars > 1 ? tr('s', '') : ''}
+                    </span>
+                  </div>
+                )}
+                {omdbDetails.parsedAwards.emmys > 0 && (
+                  <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-amber-500/10 border border-amber-500/25 text-amber-700 dark:text-amber-300 text-xs font-bold">
+                    <Award className="w-4 h-4" />
+                    <span>{omdbDetails.parsedAwards.emmys} Emmy{omdbDetails.parsedAwards.emmys > 1 ? 's' : ''}</span>
+                  </div>
+                )}
+                {omdbDetails.parsedAwards.goldenGlobes > 0 && (
+                  <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-amber-500/10 border border-amber-500/25 text-amber-700 dark:text-amber-300 text-xs font-bold">
+                    <Award className="w-4 h-4" />
+                    <span>{omdbDetails.parsedAwards.goldenGlobes} Golden Globe{omdbDetails.parsedAwards.goldenGlobes > 1 ? 's' : ''}</span>
+                  </div>
+                )}
+                {omdbDetails.parsedAwards.wins > 0 && (
+                  <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900 text-[#2B50FF] dark:text-[#7F95FF] text-xs font-bold tabular-nums">
+                    <Award className="w-4 h-4" />
+                    <span>
+                      {omdbDetails.parsedAwards.wins}{' '}
+                      {tr(
+                        omdbDetails.parsedAwards.wins > 1 ? 'victoires / prix' : 'victoire / prix',
+                        omdbDetails.parsedAwards.wins > 1 ? 'award wins' : 'award win'
+                      )}
+                    </span>
+                  </div>
+                )}
+                {omdbDetails.parsedAwards.nominations > 0 && (
+                  <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-[#D5DBE8] dark:border-[#27324D] text-[#55607A] dark:text-[#A3AEC8] text-xs font-semibold tabular-nums">
+                    <span>
+                      {omdbDetails.parsedAwards.nominations}{' '}
+                      {omdbDetails.parsedAwards.nominations > 1 ? 'nominations' : 'nomination'}
+                    </span>
+                  </div>
+                )}
+              </div>
+              <p className="text-xs text-[#55607A] dark:text-[#A3AEC8]">
+                <strong className="text-[#14213D] dark:text-[#EEF1F8]">{tr('Résumé IMDb / OMDb :', 'IMDb / OMDb summary:')}</strong>{' '}
+                {omdbDetails.parsedAwards.raw}
+              </p>
+            </div>
+          )}
+
+          {/* Liste des titres et récompenses officielles nommées (Wikidata) */}
+          {wikidata && wikidata.awards.length > 0 && (
+            <div className="space-y-2 pt-1">
+              <p className="text-xs font-semibold text-[#14213D] dark:text-[#EEF1F8]">
+                {tr("Titres et récompenses officielles recensés :", "Recorded official titles & awards:")}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {wikidata.awards.map((awardName) => (
+                  <span
+                    key={awardName}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 text-xs font-medium text-[#14213D] dark:text-[#EEF1F8]"
+                  >
+                    <Trophy className="w-3.5 h-3.5 text-[#FFC83D] shrink-0" />
+                    <span>{awardName}</span>
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Métadonnées complémentaires OMDb */}
+          {(omdbDetails?.director || omdbDetails?.actors || omdbDetails?.country || omdbDetails?.released || omdbDetails?.totalSeasons) && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pt-2 border-t border-[#D5DBE8]/70 dark:border-[#27324D]/70 text-xs">
+              {omdbDetails.director && (
+                <div>
+                  <span className="text-[#55607A] dark:text-[#A3AEC8] block">{tr('Réalisation', 'Director')}</span>
+                  <strong className="text-[#14213D] dark:text-[#EEF1F8]">{omdbDetails.director}</strong>
+                </div>
+              )}
+              {omdbDetails.actors && (
+                <div>
+                  <span className="text-[#55607A] dark:text-[#A3AEC8] block">{tr('Voix & Casting', 'Voice Cast')}</span>
+                  <strong className="text-[#14213D] dark:text-[#EEF1F8]">{omdbDetails.actors}</strong>
+                </div>
+              )}
+              {omdbDetails.country && (
+                <div>
+                  <span className="text-[#55607A] dark:text-[#A3AEC8] block">{tr('Pays & Langue', 'Country & Language')}</span>
+                  <strong className="text-[#14213D] dark:text-[#EEF1F8]">
+                    {omdbDetails.country}{omdbDetails.language ? ` · ${omdbDetails.language}` : ''}
+                  </strong>
+                </div>
+              )}
+              {omdbDetails.released && (
+                <div>
+                  <span className="text-[#55607A] dark:text-[#A3AEC8] block">{tr('Première sortie', 'Initial release')}</span>
+                  <strong className="text-[#14213D] dark:text-[#EEF1F8]">{omdbDetails.released}</strong>
+                </div>
+              )}
+              {omdbDetails.totalSeasons && (
+                <div>
+                  <span className="text-[#55607A] dark:text-[#A3AEC8] block">{tr('Saisons recensées (IMDb)', 'Listed seasons (IMDb)')}</span>
+                  <strong className="text-[#14213D] dark:text-[#EEF1F8]">{omdbDetails.totalSeasons}</strong>
+                </div>
+              )}
+            </div>
+          )}
+        </section>
+      )}
 
       {/* Progression personnelle : Épisodes vus */}
       <section className="p-6 rounded-3xl bg-[#FFFFFF] dark:bg-[#161F35] border border-[#D5DBE8] dark:border-[#27324D] shadow-sm">
@@ -667,6 +888,89 @@ export const AnimeDetailPage: React.FC<AnimeDetailPageProps> = ({ id, onNavigate
                 </a>
               ))}
           </div>
+        </section>
+      )}
+
+      {/* Chronologie & Univers lié (Prequels / Sequels / Spin-offs) */}
+      {jikanDetails && jikanDetails.relations.length > 0 && (
+        <section className="p-6 rounded-3xl bg-[#FFFFFF] dark:bg-[#161F35] border border-[#D5DBE8] dark:border-[#27324D] shadow-sm space-y-4">
+          <h2 className="font-['Bricolage_Grotesque'] text-lg font-bold text-[#14213D] dark:text-[#EEF1F8] flex items-center gap-2">
+            <GitBranch className="w-5 h-5 text-[#2B50FF] dark:text-[#7F95FF]" />
+            <span>{tr("Chronologie & suites liées", "Timeline & related anime")}</span>
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {jikanDetails.relations.flatMap((group) =>
+              group.entries.slice(0, 3).map((entry) => (
+                <button
+                  key={`${group.relation}-${entry.malId}`}
+                  onClick={() => onNavigate(`/recherche?q=${encodeURIComponent(entry.name)}`)}
+                  className="text-left p-3.5 rounded-2xl border border-[#D5DBE8] dark:border-[#27324D] bg-[#F2F4F8]/60 dark:bg-[#0D1322]/60 hover:border-[#2B50FF] transition-colors group"
+                >
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#2B50FF] dark:text-[#7F95FF]">
+                    {group.relation}
+                  </span>
+                  <p className="text-xs font-bold text-[#14213D] dark:text-[#EEF1F8] mt-1 line-clamp-1 group-hover:text-[#2B50FF] dark:group-hover:text-[#7F95FF]">
+                    {entry.name}
+                  </p>
+                </button>
+              ))
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* Thèmes musicaux : Openings & Endings */}
+      {jikanDetails && (jikanDetails.openings.length > 0 || jikanDetails.endings.length > 0) && (
+        <section className="p-6 rounded-3xl bg-[#FFFFFF] dark:bg-[#161F35] border border-[#D5DBE8] dark:border-[#27324D] shadow-sm space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 className="font-['Bricolage_Grotesque'] text-lg font-bold text-[#14213D] dark:text-[#EEF1F8] flex items-center gap-2">
+              <Music className="w-5 h-5 text-[#2B50FF] dark:text-[#7F95FF]" />
+              <span>{tr("Génériques (Openings & Endings)", "Soundtrack Themes (Openings & Endings)")}</span>
+            </h2>
+            <div className="flex items-center gap-1.5 bg-[#F2F4F8] dark:bg-[#0D1322] p-1 rounded-xl border border-[#D5DBE8] dark:border-[#27324D]">
+              <button
+                type="button"
+                onClick={() => setActiveThemeTab('op')}
+                className={`px-3 py-1 rounded-lg text-xs font-semibold transition-colors ${
+                  activeThemeTab === 'op'
+                    ? 'bg-[#2B50FF] text-white'
+                    : 'text-[#55607A] dark:text-[#A3AEC8] hover:text-[#14213D] dark:hover:text-[#EEF1F8]'
+                }`}
+              >
+                Openings ({jikanDetails.openings.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveThemeTab('ed')}
+                className={`px-3 py-1 rounded-lg text-xs font-semibold transition-colors ${
+                  activeThemeTab === 'ed'
+                    ? 'bg-[#2B50FF] text-white'
+                    : 'text-[#55607A] dark:text-[#A3AEC8] hover:text-[#14213D] dark:hover:text-[#EEF1F8]'
+                }`}
+              >
+                Endings ({jikanDetails.endings.length})
+              </button>
+            </div>
+          </div>
+
+          <ul className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-[#55607A] dark:text-[#A3AEC8]">
+            {(activeThemeTab === 'op' ? jikanDetails.openings : jikanDetails.endings).length > 0 ? (
+              (activeThemeTab === 'op' ? jikanDetails.openings : jikanDetails.endings)
+                .slice(0, 10)
+                .map((themeStr, idx) => (
+                  <li
+                    key={`${activeThemeTab}-${idx}`}
+                    className="px-3 py-2 rounded-xl bg-[#F2F4F8]/70 dark:bg-[#0D1322]/60 border border-[#D5DBE8]/60 dark:border-[#27324D]/60 text-[#14213D] dark:text-[#EEF1F8]"
+                  >
+                    {themeStr}
+                  </li>
+                ))
+            ) : (
+              <li className="text-xs text-[#55607A] dark:text-[#A3AEC8]">
+                {tr("Aucun générique répertorié.", "No themes listed.")}
+              </li>
+            )}
+          </ul>
         </section>
       )}
 

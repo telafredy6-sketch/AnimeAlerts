@@ -1,7 +1,77 @@
 const ANILIST_ENDPOINT = "https://graphql.anilist.co";
 
-// Simple in-memory cache to prevent redundant fetches
+// Simple in-memory cache and in-flight deduplication to prevent redundant fetches
 const cache = new Map<string, { data: any; expiry: number }>();
+const inFlight = new Map<string, Promise<any>>();
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+async function executeAniListRequest<T>(
+  query: string,
+  variables: Record<string, any>,
+  timeoutMs = 15000
+): Promise<T> {
+  let lastError: unknown;
+
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(
+      () => controller.abort(new Error("Délai de réponse AniList dépassé")),
+      timeoutMs
+    );
+
+    try {
+      const response = await fetch(ANILIST_ENDPOINT, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json"
+        },
+        body: JSON.stringify({ query, variables }),
+        signal: controller.signal
+      });
+
+      if (response.status === 429 || response.status >= 500) {
+        lastError = new Error(`Erreur AniList (${response.status})`);
+        if (attempt === 0) {
+          await sleep(800);
+          continue;
+        }
+        throw lastError;
+      }
+
+      if (!response.ok) {
+        throw new Error(`Erreur AniList (${response.status})`);
+      }
+
+      const json = await response.json();
+      if (json.errors && json.errors.length > 0) {
+        throw new Error(json.errors[0]?.message || "Erreur GraphQL AniList");
+      }
+
+      return json.data as T;
+    } catch (err: any) {
+      const isAbortOrNetwork =
+        err?.name === "AbortError" ||
+        err?.name === "TypeError" ||
+        String(err?.message || "").includes("Délai");
+      lastError =
+        err?.name === "AbortError"
+          ? new Error("Connexion à AniList expirée. Vérifie ta connexion puis réessaye.")
+          : err;
+
+      if (isAbortOrNetwork && attempt === 0) {
+        await sleep(600);
+        continue;
+      }
+      throw lastError;
+    } finally {
+      clearTimeout(timeoutId);
+    }
+  }
+
+  throw lastError instanceof Error ? lastError : new Error("Erreur AniList");
+}
 
 export async function anilist<T = any>(query: string, variables: Record<string, any> = {}): Promise<T> {
   const cacheKey = JSON.stringify({ query, variables });
@@ -10,37 +80,23 @@ export async function anilist<T = any>(query: string, variables: Record<string, 
     return cached.data as T;
   }
 
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 9000);
+  const existing = inFlight.get(cacheKey);
+  if (existing) {
+    return existing as Promise<T>;
+  }
 
-  try {
-    const response = await fetch(ANILIST_ENDPOINT, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json"
-      },
-      body: JSON.stringify({ query, variables }),
-      signal: controller.signal
+  const promise = executeAniListRequest<T>(query, variables)
+    .then((data) => {
+      const ttl = variables.search ? 30 * 1000 : 3 * 60 * 1000;
+      cache.set(cacheKey, { data, expiry: Date.now() + ttl });
+      return data;
+    })
+    .finally(() => {
+      inFlight.delete(cacheKey);
     });
 
-    if (!response.ok) {
-      throw new Error(`Erreur AniList (${response.status})`);
-    }
-
-    const json = await response.json();
-    if (json.errors && json.errors.length > 0) {
-      throw new Error(json.errors[0]?.message || "Erreur GraphQL AniList");
-    }
-
-    // Cache valid responses for 3 minutes (or 30s for search)
-    const ttl = variables.search ? 30 * 1000 : 3 * 60 * 1000;
-    cache.set(cacheKey, { data: json.data, expiry: Date.now() + ttl });
-
-    return json.data as T;
-  } finally {
-    clearTimeout(timeoutId);
-  }
+  inFlight.set(cacheKey, promise);
+  return promise;
 }
 
 // Recherche avancée avec filtres multiples et pagination

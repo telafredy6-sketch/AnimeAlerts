@@ -64,7 +64,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onNavigate }) => {
             <li className="flex items-start gap-2">
               <span className="font-bold text-[#2B50FF]">•</span>
               <span>
-                <strong className="text-[#14213D] dark:text-[#EEF1F8]">IMDb (OMDb API)</strong> {tr(": La note attribuée par le grand public mondial et les cinéphiles.", ": The rating given by the worldwide general public and movie buffs.")}
+                <strong className="text-[#14213D] dark:text-[#EEF1F8]">IMDb & OMDb API</strong> {tr(": La note du grand public mondial, les scores critiques (Rotten Tomatoes, Metascore), le box-office et les prix/titres remportés.", ": Worldwide general audience ratings, critic scores (Rotten Tomatoes, Metascore), box office, and awards/titles won.")}
               </span>
             </li>
           </ul>
