@@ -1,30 +1,24 @@
 import React from 'react';
 
 interface AppLogoProps {
-  size?: number;
+  size?: 'sm' | 'md' | 'lg' | number;
   className?: string;
 }
 
-export const AppLogo: React.FC<AppLogoProps> = ({ size = 28, className = '' }) => {
+export const AppLogo: React.FC<AppLogoProps> = ({ size = 'md', className = '' }) => {
+  const sizeClass =
+    size === 'sm' || (typeof size === 'number' && size <= 24)
+      ? 'h-8'
+      : size === 'lg' || (typeof size === 'number' && size >= 40)
+      ? 'h-12'
+      : 'h-9 sm:h-10';
+
   return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 64 64"
-      width={size}
-      height={size}
-      className={`shrink-0 ${className}`}
-      aria-hidden="true"
-    >
-      <rect width="64" height="64" rx="16" fill="#14213D" />
-      <circle cx="32" cy="32" r="16" fill="#FFC83D" stroke="#2B50FF" strokeWidth="4" />
-      <path
-        d="M25 39 L32 23 L39 39 M27.5 34.5 L36.5 34.5"
-        fill="none"
-        stroke="#14213D"
-        strokeWidth="3.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
+    <img
+      src="/assets/aistudio/file_0000000012488210983af17121cf1c31_aeba312b.png"
+      alt="AnimeAlert Buea"
+      decoding="async"
+      className={`${sizeClass} w-auto aspect-video rounded-xl object-cover border border-[#D5DBE8]/70 dark:border-[#27324D] shadow-sm shrink-0 bg-[#0D1322] ${className}`}
+    />
   );
 };

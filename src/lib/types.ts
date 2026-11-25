@@ -57,6 +57,29 @@ export interface RecommendationNode {
   } | null;
 }
 
+export interface StreamingEpisodeItem {
+  title?: string | null;
+  thumbnail?: string | null;
+  url?: string | null;
+  site?: string | null;
+}
+
+export interface AnimeRelationEdge {
+  relationType: string;
+  node: {
+    id: number;
+    idMal?: number | null;
+    title: AnimeTitle;
+    type?: string;
+    format?: string;
+    status?: string;
+    seasonYear?: number | null;
+    episodes?: number | null;
+    coverImage?: AnimeCoverImage;
+    averageScore?: number | null;
+  };
+}
+
 export interface AnimeMedia {
   id: number;
   idMal?: number | null;
@@ -87,6 +110,11 @@ export interface AnimeMedia {
   };
   characters?: {
     edges?: CharacterEdge[];
+  };
+  synonyms?: string[];
+  streamingEpisodes?: StreamingEpisodeItem[];
+  relations?: {
+    edges?: AnimeRelationEdge[];
   };
   recommendations?: {
     nodes?: RecommendationNode[];

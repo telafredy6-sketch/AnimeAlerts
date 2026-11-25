@@ -80,7 +80,7 @@ export const Header: React.FC<HeaderProps> = ({ currentPath, onNavigate }) => {
           onClick={() => onNavigate('/')}
           className="flex items-center gap-2.5 text-left group whitespace-nowrap shrink-0 focus-visible:outline-2 focus-visible:outline-[#2B50FF]"
         >
-          <AppLogo size={28} className="transition-transform group-hover:scale-105" />
+          <AppLogo size="md" className="transition-transform group-hover:scale-105" />
           <span className="font-['Bricolage_Grotesque'] text-lg sm:text-xl font-extrabold tracking-tight text-[#14213D] dark:text-[#EEF1F8]">
             AnimeAlert <span className="text-[#2B50FF] dark:text-[#7F95FF]">Buea</span>
           </span>

@@ -45,3 +45,49 @@ export function effacerHistoriqueRecherche(): void {
     // ignore
   }
 }
+
+export interface RecentAnimeItem {
+  id: number;
+  titre: string;
+  affiche?: string;
+  banniere?: string | null;
+  format?: string;
+  episodesTotal?: number | null;
+  noteAniList?: number | null;
+  consulteLe: number;
+}
+
+const CLE_RECENTS = "animealert:animes_recents";
+const MAX_RECENTS = 10;
+
+export function lireAnimesRecents(): RecentAnimeItem[] {
+  try {
+    const raw = localStorage.getItem(CLE_RECENTS);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function ajouterAnimeRecent(item: Omit<RecentAnimeItem, 'consulteLe'>): void {
+  try {
+    let list = lireAnimesRecents().filter((x) => x.id !== item.id);
+    list.unshift({ ...item, consulteLe: Date.now() });
+    if (list.length > MAX_RECENTS) {
+      list = list.slice(0, MAX_RECENTS);
+    }
+    localStorage.setItem(CLE_RECENTS, JSON.stringify(list));
+    window.dispatchEvent(new CustomEvent('animealert:recent-change'));
+  } catch {
+    // ignore storage errors
+  }
+}
+
+export function effacerAnimesRecents(): void {
+  try {
+    localStorage.removeItem(CLE_RECENTS);
+    window.dispatchEvent(new CustomEvent('animealert:recent-change'));
+  } catch {
+    // ignore
+  }
+}

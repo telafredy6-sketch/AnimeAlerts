@@ -1,4 +1,4 @@
-const CACHE_NAME = 'animealert-v4';
+const CACHE_NAME = 'animealert-v6';
 const IMAGE_CACHE_NAME = 'animealert-images-v1';
 const NOTIF_STATE_CACHE = 'animealert-notif-state';
 const NOTIF_STATE_KEY = '/__animealert_notif_state__';
@@ -7,8 +7,7 @@ const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/manifest.webmanifest',
-  '/favicon.svg',
-  '/icon.svg',
+  '/assets/aistudio/file_0000000012488210983af17121cf1c31_aeba312b.png',
   '/pwa-192x192.png',
   '/pwa-512x512.png',
   '/apple-touch-icon.png'
@@ -94,23 +93,36 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // App navigation and static assets: Cache First then Network
-  event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) return cachedResponse;
-      return fetch(event.request)
+  // HTML navigation requests: Network First so UI updates are seen immediately
+  if (
+    event.request.mode === 'navigate' ||
+    (url.origin === self.location.origin && (url.pathname === '/' || url.pathname.endsWith('.html')))
+  ) {
+    event.respondWith(
+      fetch(event.request)
         .then((networkResponse) => {
-          if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
+          if (networkResponse && networkResponse.status === 200) {
             const clone = networkResponse.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+            event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.put('/index.html', clone)));
           }
           return networkResponse;
         })
-        .catch(() => {
-          if (event.request.mode === 'navigate') {
-            return caches.match('/index.html') || caches.match('/');
-          }
-        });
+        .catch(() => caches.match('/index.html').then((r) => r || caches.match('/')))
+    );
+    return;
+  }
+
+  // Immutable static assets (/assets/*, icons, manifest): Cache First then Network
+  event.respondWith(
+    caches.match(event.request).then((cachedResponse) => {
+      if (cachedResponse) return cachedResponse;
+      return fetch(event.request).then((networkResponse) => {
+        if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
+          const clone = networkResponse.clone();
+          event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone)));
+        }
+        return networkResponse;
+      });
     })
   );
 });

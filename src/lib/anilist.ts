@@ -213,9 +213,11 @@ query ($season: MediaSeason, $seasonYear: Int) {
       title { romaji english }
       coverImage { large extraLarge color }
       bannerImage
+      description(asHtml: false)
       genres
       averageScore
       episodes
+      duration
       status
       format
       seasonYear
@@ -247,6 +249,7 @@ query ($id: Int) {
     id
     idMal
     title { romaji english native }
+    synonyms
     coverImage { extraLarge large medium color }
     bannerImage
     description(asHtml: false)
@@ -274,6 +277,29 @@ query ($id: Int) {
       site
       type
       url
+    }
+    streamingEpisodes {
+      title
+      thumbnail
+      url
+      site
+    }
+    relations {
+      edges {
+        relationType
+        node {
+          id
+          idMal
+          type
+          title { romaji english }
+          format
+          status
+          seasonYear
+          episodes
+          averageScore
+          coverImage { large medium color }
+        }
+      }
     }
     studios(isMain: true) {
       nodes {

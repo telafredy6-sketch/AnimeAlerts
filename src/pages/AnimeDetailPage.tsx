@@ -41,14 +41,18 @@ import {
 } from '../lib/favoris';
 import {
   fetchJikanDetails,
+  fetchJikanEpisodes,
   fetchOmdbDetails,
   fetchWikidataImdbAndAwards,
   analyseNotes,
   JikanDetails,
+  JikanEpisodeItem,
   OmdbDetails,
   WikidataEnrichment
 } from '../lib/notes';
 import { isAnimeSubscribed, toggleAnimeSubscription } from '../lib/notifications';
+import { ajouterAnimeRecent } from '../lib/history';
+import { Search, Check } from 'lucide-react';
 
 interface AnimeDetailPageProps {
   id: string;
@@ -68,6 +72,14 @@ export const AnimeDetailPage: React.FC<AnimeDetailPageProps> = ({ id, onNavigate
   const [wikidata, setWikidata] = useState<WikidataEnrichment | null>(null);
   const [notesLoading, setNotesLoading] = useState(false);
   const [activeThemeTab, setActiveThemeTab] = useState<'op' | 'ed'>('op');
+
+  // Épisodes (Jikan + streamingEpisodes)
+  const [episodesList, setEpisodesList] = useState<JikanEpisodeItem[]>([]);
+  const [episodesPage, setEpisodesPage] = useState(1);
+  const [episodesHasNext, setEpisodesHasNext] = useState(false);
+  const [episodesLoading, setEpisodesLoading] = useState(false);
+  const [episodeSearch, setEpisodeSearch] = useState('');
+  const [episodeSort, setEpisodeSort] = useState<'asc' | 'desc'>('asc');
 
   // Progression & Favoris
   const [isFav, setIsFav] = useState(false);
@@ -93,6 +105,10 @@ export const AnimeDetailPage: React.FC<AnimeDetailPageProps> = ({ id, onNavigate
     setJikanDetails(null);
     setOmdbDetails(null);
     setWikidata(null);
+    setEpisodesList([]);
+    setEpisodesPage(1);
+    setEpisodesHasNext(false);
+    setEpisodeSearch('');
 
     anilist(QUERY_FICHE_COMPLETE, { id: animeId })
       .then((data) => {
@@ -104,20 +120,40 @@ export const AnimeDetailPage: React.FC<AnimeDetailPageProps> = ({ id, onNavigate
         }
         setAnime(media);
 
+        // Enregistrer dans "Reprendre ma découverte" (localStorage, sans admin)
+        ajouterAnimeRecent({
+          id: media.id,
+          titre: titreDe(media.title),
+          affiche: media.coverImage?.large || media.coverImage?.extraLarge || '',
+          banniere: media.bannerImage,
+          format: media.format,
+          episodesTotal: media.episodes,
+          noteAniList: media.averageScore
+        });
+
         // Init favori, progression & alerte push
         setIsFav(estFavori(animeId));
         setNotificationActivee(isAnimeSubscribed(animeId));
         const prog = lireProgression(animeId);
         setEpisodesVus(prog.episodesVus || 0);
 
-        // Fetch companion notes (MyAnimeList, Wikidata IMDb/Awards & OMDb)
+        // Fetch companion notes (MyAnimeList, Wikidata IMDb/Awards, Épisodes & OMDb)
         setNotesLoading(true);
         const titles = [media.title?.english, media.title?.romaji].filter(Boolean) as string[];
 
         const jikanPromise = media.idMal
-          ? fetchJikanDetails(media.idMal).then((details) => {
-              if (!ignore) setJikanDetails(details);
-            })
+          ? Promise.all([
+              fetchJikanDetails(media.idMal).then((details) => {
+                if (!ignore) setJikanDetails(details);
+              }),
+              fetchJikanEpisodes(media.idMal, 1).then((epRes) => {
+                if (!ignore) {
+                  setEpisodesList(epRes.episodes);
+                  setEpisodesHasNext(epRes.hasNextPage);
+                  setEpisodesPage(1);
+                }
+              })
+            ])
           : Promise.resolve();
 
         const wikidataAndOmdbPromise = fetchWikidataImdbAndAwards(media.id, media.idMal).then(async (wd) => {
@@ -367,6 +403,12 @@ export const AnimeDetailPage: React.FC<AnimeDetailPageProps> = ({ id, onNavigate
               {titreSec && (
                 <p className="text-xs sm:text-sm text-white/60 mt-1 font-medium">
                   {titreSec} {anime.title?.native ? `(${anime.title.native})` : ''}
+                </p>
+              )}
+
+              {anime.synonyms && anime.synonyms.length > 0 && (
+                <p className="text-[11px] text-white/50 mt-1">
+                  {tr('Autres titres :', 'Also known as:')} {anime.synonyms.slice(0, 3).join(' · ')}
                 </p>
               )}
             </div>
@@ -891,33 +933,291 @@ export const AnimeDetailPage: React.FC<AnimeDetailPageProps> = ({ id, onNavigate
         </section>
       )}
 
-      {/* Chronologie & Univers lié (Prequels / Sequels / Spin-offs) */}
-      {jikanDetails && jikanDetails.relations.length > 0 && (
-        <section className="p-6 rounded-3xl bg-[#FFFFFF] dark:bg-[#161F35] border border-[#D5DBE8] dark:border-[#27324D] shadow-sm space-y-4">
-          <h2 className="font-['Bricolage_Grotesque'] text-lg font-bold text-[#14213D] dark:text-[#EEF1F8] flex items-center gap-2">
-            <GitBranch className="w-5 h-5 text-[#2B50FF] dark:text-[#7F95FF]" />
-            <span>{tr("Chronologie & suites liées", "Timeline & related anime")}</span>
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {jikanDetails.relations.flatMap((group) =>
-              group.entries.slice(0, 3).map((entry) => (
-                <button
-                  key={`${group.relation}-${entry.malId}`}
-                  onClick={() => onNavigate(`/recherche?q=${encodeURIComponent(entry.name)}`)}
-                  className="text-left p-3.5 rounded-2xl border border-[#D5DBE8] dark:border-[#27324D] bg-[#F2F4F8]/60 dark:bg-[#0D1322]/60 hover:border-[#2B50FF] transition-colors group"
-                >
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#2B50FF] dark:text-[#7F95FF]">
-                    {group.relation}
+      {/* Saisons & Univers lié (Navigation directe AniList + fallback Jikan) */}
+      {(() => {
+        const allowedAniRelations = new Set([
+          'PREQUEL',
+          'SEQUEL',
+          'SIDE_STORY',
+          'SPIN_OFF',
+          'ALTERNATIVE',
+          'PARENT',
+          'SUMMARY'
+        ]);
+        const relationLabels: Record<string, string> = {
+          PREQUEL: tr('Saison précédente / Préquelle', 'Prequel / Previous'),
+          SEQUEL: tr('Saison suivante / Suite', 'Sequel / Next season'),
+          SIDE_STORY: tr('Histoire parallèle', 'Side story'),
+          SPIN_OFF: 'Spin-off',
+          ALTERNATIVE: tr('Version alternative', 'Alternative version'),
+          PARENT: tr('Série principale', 'Parent story'),
+          SUMMARY: tr('Film récapitulatif', 'Summary')
+        };
+        const directSeasons = (anime.relations?.edges || []).filter(
+          (e) => e.node?.type === 'ANIME' && allowedAniRelations.has(e.relationType)
+        );
+
+        if (directSeasons.length > 0) {
+          return (
+            <section className="p-6 rounded-3xl bg-[#FFFFFF] dark:bg-[#161F35] border border-[#D5DBE8] dark:border-[#27324D] shadow-sm space-y-4">
+              <div className="flex items-center justify-between gap-2">
+                <h2 className="font-['Bricolage_Grotesque'] text-lg font-bold text-[#14213D] dark:text-[#EEF1F8] flex items-center gap-2">
+                  <GitBranch className="w-5 h-5 text-[#2B50FF] dark:text-[#7F95FF]" />
+                  <span>{tr("Saisons, films & suites liées", "Seasons, movies & related entries")}</span>
+                </h2>
+                <span className="text-xs text-[#55607A] dark:text-[#A3AEC8] tabular-nums">
+                  {directSeasons.length} {tr('liés', 'related')}
+                </span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {directSeasons.map((edge) => {
+                  const rel = edge.node;
+                  const relTitle = titreDe(rel.title);
+                  const relFmt = rel.format ? FORMATS[rel.format] || rel.format : null;
+                  return (
+                    <button
+                      key={`${edge.relationType}-${rel.id}`}
+                      onClick={() => onNavigate(`/anime/${rel.id}`)}
+                      className="flex items-center gap-3 text-left p-3 rounded-2xl border border-[#D5DBE8] dark:border-[#27324D] bg-[#F2F4F8]/60 dark:bg-[#0D1322]/60 hover:border-[#2B50FF] transition-all group"
+                    >
+                      {rel.coverImage?.large && (
+                        <img
+                          src={rel.coverImage.large}
+                          alt={relTitle}
+                          loading="lazy"
+                          decoding="async"
+                          referrerPolicy="no-referrer"
+                          className="w-12 h-16 rounded-xl object-cover shrink-0 bg-slate-200 dark:bg-slate-800"
+                        />
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#2B50FF] dark:text-[#7F95FF]">
+                          {relationLabels[edge.relationType] || edge.relationType}
+                        </span>
+                        <p className="text-xs font-bold text-[#14213D] dark:text-[#EEF1F8] mt-0.5 line-clamp-2 group-hover:text-[#2B50FF] dark:group-hover:text-[#7F95FF]">
+                          {relTitle}
+                        </p>
+                        <div className="flex items-center gap-1.5 text-[10px] text-[#55607A] dark:text-[#A3AEC8] mt-1">
+                          {relFmt && <span>{relFmt}</span>}
+                          {rel.seasonYear && <span>· {rel.seasonYear}</span>}
+                          {rel.episodes && <span>· {rel.episodes} {tr('ép.', 'ep.')}</span>}
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+          );
+        }
+
+        if (jikanDetails && jikanDetails.relations.length > 0) {
+          return (
+            <section className="p-6 rounded-3xl bg-[#FFFFFF] dark:bg-[#161F35] border border-[#D5DBE8] dark:border-[#27324D] shadow-sm space-y-4">
+              <h2 className="font-['Bricolage_Grotesque'] text-lg font-bold text-[#14213D] dark:text-[#EEF1F8] flex items-center gap-2">
+                <GitBranch className="w-5 h-5 text-[#2B50FF] dark:text-[#7F95FF]" />
+                <span>{tr("Chronologie & suites liées", "Timeline & related anime")}</span>
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {jikanDetails.relations.flatMap((group) =>
+                  group.entries.slice(0, 3).map((entry) => (
+                    <button
+                      key={`${group.relation}-${entry.malId}`}
+                      onClick={() => onNavigate(`/recherche?q=${encodeURIComponent(entry.name)}`)}
+                      className="text-left p-3.5 rounded-2xl border border-[#D5DBE8] dark:border-[#27324D] bg-[#F2F4F8]/60 dark:bg-[#0D1322]/60 hover:border-[#2B50FF] transition-colors group"
+                    >
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#2B50FF] dark:text-[#7F95FF]">
+                        {group.relation}
+                      </span>
+                      <p className="text-xs font-bold text-[#14213D] dark:text-[#EEF1F8] mt-1 line-clamp-1 group-hover:text-[#2B50FF] dark:group-hover:text-[#7F95FF]">
+                        {entry.name}
+                      </p>
+                    </button>
+                  ))
+                )}
+              </div>
+            </section>
+          );
+        }
+
+        return null;
+      })()}
+
+      {/* Liste des Épisodes (automatique Jikan + AniList streamingEpisodes, avec recherche & tri) */}
+      {(episodesList.length > 0 || (anime.streamingEpisodes && anime.streamingEpisodes.length > 0)) && (() => {
+        const streamingMap = new Map<number, { thumbnail?: string | null; title?: string | null }>();
+        (anime.streamingEpisodes || []).forEach((se, idx) => {
+          const epMatch = se.title?.match(/(?:Episode|Épisode|Ep\.?)\s*(\d+)/i);
+          const epNum = epMatch ? parseInt(epMatch[1], 10) : idx + 1;
+          if (!streamingMap.has(epNum)) {
+            streamingMap.set(epNum, { thumbnail: se.thumbnail, title: se.title });
+          }
+        });
+
+        const baseEpisodes: JikanEpisodeItem[] =
+          episodesList.length > 0
+            ? episodesList
+            : (anime.streamingEpisodes || []).map((se, idx) => ({
+                mal_id: idx + 1,
+                title: se.title || `${tr('Épisode', 'Episode')} ${idx + 1}`,
+                filler: false,
+                recap: false
+              }));
+
+        const qLower = episodeSearch.trim().toLowerCase();
+        const filteredEps = baseEpisodes
+          .filter((ep) => {
+            if (!qLower) return true;
+            return (
+              String(ep.mal_id).includes(qLower) ||
+              ep.title.toLowerCase().includes(qLower)
+            );
+          })
+          .sort((a, b) => (episodeSort === 'asc' ? a.mal_id - b.mal_id : b.mal_id - a.mal_id));
+
+        const handleLoadMoreEpisodes = async () => {
+          if (!anime.idMal || episodesLoading || !episodesHasNext) return;
+          setEpisodesLoading(true);
+          try {
+            const nextPage = episodesPage + 1;
+            const res = await fetchJikanEpisodes(anime.idMal, nextPage);
+            if (res.episodes.length > 0) {
+              setEpisodesList((prev) => [...prev, ...res.episodes]);
+              setEpisodesPage(nextPage);
+              setEpisodesHasNext(res.hasNextPage);
+            } else {
+              setEpisodesHasNext(false);
+            }
+          } finally {
+            setEpisodesLoading(false);
+          }
+        };
+
+        return (
+          <section className="p-6 rounded-3xl bg-[#FFFFFF] dark:bg-[#161F35] border border-[#D5DBE8] dark:border-[#27324D] shadow-sm space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <h2 className="font-['Bricolage_Grotesque'] text-lg font-bold text-[#14213D] dark:text-[#EEF1F8] flex items-center gap-2">
+                  <Tv className="w-5 h-5 text-[#2B50FF] dark:text-[#7F95FF]" />
+                  <span>{tr('Liste des épisodes', 'Episodes list')}</span>
+                  <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/50 text-[#2B50FF] dark:text-[#7F95FF] tabular-nums">
+                    {filteredEps.length}
                   </span>
-                  <p className="text-xs font-bold text-[#14213D] dark:text-[#EEF1F8] mt-1 line-clamp-1 group-hover:text-[#2B50FF] dark:group-hover:text-[#7F95FF]">
-                    {entry.name}
-                  </p>
+                </h2>
+                <p className="text-xs text-[#55607A] dark:text-[#A3AEC8] mt-0.5">
+                  {tr('Clique sur un épisode pour mettre à jour ta progression locale.', 'Click an episode to update your local watch progress.')}
+                </p>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="relative">
+                  <Search className="w-3.5 h-3.5 text-[#55607A] absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="search"
+                    value={episodeSearch}
+                    onChange={(e) => setEpisodeSearch(e.target.value)}
+                    placeholder={tr('Chercher un épisode...', 'Search episodes...')}
+                    className="pl-8 pr-3 py-1.5 text-xs rounded-xl border border-[#D5DBE8] dark:border-[#27324D] bg-[#F2F4F8] dark:bg-[#0D1322] text-[#14213D] dark:text-[#EEF1F8] outline-none focus:border-[#2B50FF]"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setEpisodeSort((prev) => (prev === 'asc' ? 'desc' : 'asc'))}
+                  className="px-3 py-1.5 text-xs font-semibold rounded-xl border border-[#D5DBE8] dark:border-[#27324D] bg-[#F2F4F8] dark:bg-[#0D1322] text-[#14213D] dark:text-[#EEF1F8] hover:border-[#2B50FF] transition-colors"
+                >
+                  {episodeSort === 'asc' ? tr('Plus anciens ↑', 'Oldest ↑') : tr('Plus récents ↓', 'Newest ↓')}
                 </button>
-              ))
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 max-h-[440px] overflow-y-auto pr-1">
+              {filteredEps.map((ep) => {
+                const isWatched = ep.mal_id <= episodesVus;
+                const thumb = streamingMap.get(ep.mal_id)?.thumbnail;
+                return (
+                  <button
+                    key={ep.mal_id}
+                    type="button"
+                    onClick={() => handleChangerEpisodesVus(isWatched && ep.mal_id === episodesVus ? ep.mal_id - 1 : ep.mal_id)}
+                    className={`flex items-center gap-3 p-2.5 rounded-2xl border text-left transition-all ${
+                      isWatched
+                        ? 'bg-emerald-50/70 dark:bg-emerald-950/25 border-emerald-500/40'
+                        : 'bg-[#F2F4F8]/60 dark:bg-[#0D1322]/60 border-[#D5DBE8] dark:border-[#27324D] hover:border-[#2B50FF]'
+                    }`}
+                  >
+                    {thumb ? (
+                      <div className="relative w-20 aspect-video rounded-lg overflow-hidden shrink-0 bg-slate-800">
+                        <img
+                          src={thumb}
+                          alt={ep.title}
+                          loading="lazy"
+                          decoding="async"
+                          referrerPolicy="no-referrer"
+                          className="w-full h-full object-cover"
+                        />
+                        <span className="absolute bottom-1 left-1 px-1.5 py-0.2 rounded bg-black/75 text-white text-[10px] font-bold tabular-nums">
+                          {ep.mal_id}
+                        </span>
+                      </div>
+                    ) : (
+                      <div
+                        className={`w-9 h-9 rounded-xl shrink-0 flex items-center justify-center text-xs font-extrabold tabular-nums ${
+                          isWatched
+                            ? 'bg-emerald-500 text-white'
+                            : 'bg-[#FFFFFF] dark:bg-[#161F35] border border-[#D5DBE8] dark:border-[#27324D] text-[#14213D] dark:text-[#EEF1F8]'
+                        }`}
+                      >
+                        {isWatched ? <Check className="w-4 h-4" /> : ep.mal_id}
+                      </div>
+                    )}
+
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[10px] font-bold uppercase text-[#2B50FF] dark:text-[#7F95FF] tabular-nums">
+                          {tr('Ép.', 'Ep.')} {ep.mal_id}
+                        </span>
+                        {ep.filler && (
+                          <span className="px-1.5 py-0.2 rounded bg-amber-500/15 text-amber-600 dark:text-amber-400 text-[9px] font-bold">
+                            FILLER
+                          </span>
+                        )}
+                        {ep.recap && (
+                          <span className="px-1.5 py-0.2 rounded bg-slate-500/15 text-slate-600 dark:text-slate-300 text-[9px] font-bold">
+                            RECAP
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs font-semibold text-[#14213D] dark:text-[#EEF1F8] line-clamp-1 mt-0.5">
+                        {ep.title}
+                      </p>
+                      {ep.aired && (
+                        <span className="text-[10px] text-[#55607A] dark:text-[#A3AEC8]">
+                          {new Date(ep.aired).toLocaleDateString(LOCALE)}
+                        </span>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            {episodesHasNext && (
+              <div className="pt-1 flex justify-center">
+                <button
+                  type="button"
+                  onClick={handleLoadMoreEpisodes}
+                  disabled={episodesLoading}
+                  className="px-4 py-2 rounded-xl border border-[#D5DBE8] dark:border-[#27324D] bg-[#F2F4F8] dark:bg-[#0D1322] text-xs font-semibold text-[#14213D] dark:text-[#EEF1F8] hover:border-[#2B50FF] transition-colors disabled:opacity-50"
+                >
+                  {episodesLoading
+                    ? tr('Chargement...', 'Loading...')
+                    : tr("Charger plus d'épisodes", 'Load more episodes')}
+                </button>
+              </div>
             )}
-          </div>
-        </section>
-      )}
+          </section>
+        );
+      })()}
 
       {/* Thèmes musicaux : Openings & Endings */}
       {jikanDetails && (jikanDetails.openings.length > 0 || jikanDetails.endings.length > 0) && (

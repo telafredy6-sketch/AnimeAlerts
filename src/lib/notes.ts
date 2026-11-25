@@ -56,7 +56,24 @@ export interface WikidataEnrichment {
   awards: string[];
 }
 
+export interface JikanEpisodeItem {
+  mal_id: number;
+  title: string;
+  title_japanese?: string | null;
+  aired?: string | null;
+  score?: number | null;
+  filler?: boolean;
+  recap?: boolean;
+}
+
+export interface JikanEpisodesResult {
+  episodes: JikanEpisodeItem[];
+  hasNextPage: boolean;
+  lastVisiblePage: number;
+}
+
 const malCache = new Map<number, { data: JikanDetails; expiry: number }>();
+const malEpisodesCache = new Map<string, { data: JikanEpisodesResult; expiry: number }>();
 const imdbCache = new Map<string, { data: OmdbDetails; expiry: number }>();
 const wikidataCache = new Map<string, { data: WikidataEnrichment; expiry: number }>();
 
@@ -192,6 +209,47 @@ export async function fetchJikanDetails(idMal: number): Promise<JikanDetails | n
 export async function fetchJikanScore(idMal: number): Promise<number | null> {
   const details = await fetchJikanDetails(idMal);
   return details?.score ?? null;
+}
+
+export async function fetchJikanEpisodes(idMal: number, page = 1): Promise<JikanEpisodesResult> {
+  const key = `${idMal}-${page}`;
+  const cached = malEpisodesCache.get(key);
+  if (cached && cached.expiry > Date.now()) {
+    return cached.data;
+  }
+
+  for (let essai = 0; essai < 2; essai++) {
+    try {
+      const response = await fetch(`https://api.jikan.moe/v4/anime/${idMal}/episodes?page=${page}`);
+      if (response.status === 429) {
+        await sleep(1000);
+        continue;
+      }
+      if (!response.ok) return { episodes: [], hasNextPage: false, lastVisiblePage: 1 };
+      const json = await response.json();
+      const episodes: JikanEpisodeItem[] = Array.isArray(json?.data)
+        ? json.data.map((ep: any) => ({
+            mal_id: Number(ep.mal_id),
+            title: String(ep.title || ep.title_romanji || `Episode ${ep.mal_id}`),
+            title_japanese: ep.title_japanese || null,
+            aired: ep.aired || null,
+            score: ep.score ? Number(ep.score) : null,
+            filler: Boolean(ep.filler),
+            recap: Boolean(ep.recap)
+          }))
+        : [];
+      const result: JikanEpisodesResult = {
+        episodes,
+        hasNextPage: Boolean(json?.pagination?.has_next_page),
+        lastVisiblePage: Number(json?.pagination?.last_visible_page || 1)
+      };
+      malEpisodesCache.set(key, { data: result, expiry: Date.now() + 15 * 60 * 1000 });
+      return result;
+    } catch {
+      return { episodes: [], hasNextPage: false, lastVisiblePage: 1 };
+    }
+  }
+  return { episodes: [], hasNextPage: false, lastVisiblePage: 1 };
 }
 
 export async function fetchWikidataImdbAndAwards(
